@@ -6,8 +6,7 @@ void Rom::Set(std::string romfile)
   in.read(reinterpret_cast<char*>(rom.data()), static_cast<std::streamsize>(rom.size()));  
 }
 
-unsigned char Rom::Read(unsigned int addr) const
+uint8_t Rom::Read(uint16_t addr) const
 {
   return rom.at(addr);
 }
-

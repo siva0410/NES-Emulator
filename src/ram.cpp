@@ -1,11 +1,11 @@
 #include "ram.hpp"
 
-unsigned char Ram::Read(unsigned int addr) const
+uint8_t Ram::Read(uint16_t addr) const
 {
   return ram.at(addr);
 }
 
-void Ram::Write(unsigned int addr, unsigned char data)
+void Ram::Write(uint16_t addr, uint8_t data)
 {
   ram.at(addr) = data;
 }
