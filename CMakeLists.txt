@@ -6,6 +6,11 @@ project(nes
 
 add_executable(nes
     src/main.cpp
+    src/nes.cpp
+    src/bus.cpp
+    src/cpu.cpp
+    src/ram.cpp
+    src/rom.cpp
 )
 
 target_include_directories(nes
