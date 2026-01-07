@@ -25,8 +25,7 @@ Usually cartridge ROM and mapper registers.
 
 uint8_t Bus::Read(uint16_t addr) const
 {
-  addr = addr&0xFFFF;
-  if(addr >= 0x0000 && addr < 0x0800){
+  if(addr >= 0x0000 && addr <= 0x07FF){
     return ram_->Read(addr);
   }
   else if(addr >= 0x8000){
@@ -39,7 +38,9 @@ uint8_t Bus::Read(uint16_t addr) const
 
 void Bus::Write(uint16_t addr, uint8_t data)
 {
-  // ram[addr&0xFFFF] = data;
+  if(addr >= 0x0000 && addr <= 0x07FF){
+    ram_->Write(addr, data);
+  }
 }
 
 void Bus::SetROM(std::string romfile)
