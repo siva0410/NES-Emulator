@@ -2,136 +2,136 @@
 
 void Register::SetPC(uint16_t addr)
 {
-  pc = addr;
+  pc_ = addr;
 }
 
 void Register::IncPC()
 {
-  pc++;
+  pc_++;
 }
 
 uint16_t Register::PC()
 {
-  return pc;
+  return pc_;
 }
 
 uint8_t Register::A()
 {
-  return a;
+  return a_;
 }
 
 void Register::SetA(uint8_t data)
 {
-  a = data;
+  a_ = data;
 }
 
 uint8_t Register::X()
 {
-  return x;
+  return x_;
 }
 
 void Register::SetX(uint8_t data)
 {
-  x = data;
+  x_ = data;
 }
 
 uint8_t Register::Y()
 {
-  return y;
+  return y_;
 }
 
 void Register::SetY(uint8_t data)
 {
-  y = data;
+  y_ = data;
 }
 
 uint8_t Register::S()
 {
-  return s;
+  return s_;
 }
 
 void Register::SetS(uint8_t data)
 {
-  s = data;
+  s_ = data;
 }
 
 uint8_t Register::P()
 {
-  return p;
+  return p_;
 }
 
 void Register::SetP(uint8_t data)
 {
-  p = data;
+  p_ = data;
 }
 
 void Register::SetCarry()
 {
-  flag |= 0b00000001;
+  flag_ |= 0b00000001;
 }
 
 void Register::UnsetCarry()
 {
-  flag &= 0b11111110;
+  flag_ &= 0b11111110;
 }
 
 void Register::SetZero()
 {
-  flag |= 0b00000010;
+  flag_ |= 0b00000010;
 }
 
 void Register::UnsetZero()
 {
-  flag &= 0b11111101;
+  flag_ &= 0b11111101;
 }
 
 void Register::SetIRQ()
 {
-  flag |= 0b00000100;
+  flag_ |= 0b00000100;
 }
 
 void Register::UnsetIRQ()
 {
-  flag &= 0b11111011;
+  flag_ &= 0b11111011;
 }
 
 void Register::SetDecimal()
 {
-  flag |= 0b00001000;
+  flag_ |= 0b00001000;
 }
 
 void Register::UnsetDecimal()
 {
-  flag &= 0b11110111;
+  flag_ &= 0b11110111;
 }
 
 void Register::SetBreak()
 {
-  flag |= 0b00010000;
+  flag_ |= 0b00010000;
 }
 
 void Register::UnsetBreak()
 {
-  flag &= 0b11101111;
+  flag_ &= 0b11101111;
 }
 
 void Register::SetOverflow()
 {
-  flag |= 0b01000000;
+  flag_ |= 0b01000000;
 }
 
 void Register::UnsetOverflow()
 {
-  flag &= 0b10111111;
+  flag_ &= 0b10111111;
 }
 
 void Register::SetNegative()
 {
-  flag |= 0b10000000;
+  flag_ |= 0b10000000;
 }
 
 void Register::UnsetNegative()
 {
-  flag &= 0b01111111;
+  flag_ &= 0b01111111;
 }
 

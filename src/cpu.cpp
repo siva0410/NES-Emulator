@@ -1,7 +1,7 @@
 #include <iostream>
 #include "cpu.hpp"
 
-Cpu::Cpu(Bus* bus)
+Cpu::Cpu(Bus& bus)
   : bus_(bus)
 {
   MakeOpTable();
@@ -10,7 +10,7 @@ Cpu::Cpu(Bus* bus)
 void Cpu::Start()
 {
   regs_.SetPC(0);
-  uint8_t idx = bus_->Read(regs_.PC());
+  uint8_t idx = bus_.Read(regs_.PC());
   switch(optable_[idx].opcode) {
   case Opcode::LDA:
     std::cout << "LDA" << std::endl;

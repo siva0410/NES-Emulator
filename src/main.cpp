@@ -2,8 +2,7 @@
 
 int main()
 {
-  Nes nes{};
-  nes.SetROM("rom/helloworld.nes");
+  Nes nes{"rom/helloworld.nes"};
   nes.Start();
   
   return 0;

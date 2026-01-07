@@ -1,10 +1,12 @@
 #pragma once
 
 #include <cstdint>
+#include <cstddef>
 
 #include "bus.hpp"
 #include "register.hpp"
 
+using std::size_t;
 using std::uint8_t;
 using std::uint16_t;
 using std::uint32_t;
@@ -62,10 +64,10 @@ struct OpInfo {
 class Cpu {
 private:
   Register regs_{};
-  Bus* bus_;
+  Bus& bus_;
   std::array<OpInfo, 256> optable_{};
   void MakeOpTable();
 public:
-  Cpu(Bus* bus);
+  Cpu(Bus& bus);
   void Start();
 };

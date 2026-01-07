@@ -1,20 +1,22 @@
 #pragma once
 
 #include <cstdint>
+#include <cstddef>
 
+using std::size_t;
 using std::uint8_t;
 using std::uint16_t;
 using std::uint32_t;
 
 class Register {
 private:
-  uint8_t a;
-  uint8_t x;
-  uint8_t y;
-  uint8_t s;
-  uint8_t p;
-  uint16_t pc;
-  uint8_t flag = 0b00100000;
+  uint8_t a_;
+  uint8_t x_;
+  uint8_t y_;
+  uint8_t s_;
+  uint8_t p_;
+  uint16_t pc_;
+  uint8_t flag_ = 0b00100000;
 public:
   void SetPC(uint16_t addr);
   void IncPC();

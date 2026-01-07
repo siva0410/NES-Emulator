@@ -1,11 +1,21 @@
 #include "ram.hpp"
 
+Ram::Ram()
+  : Ram(0)
+{
+}
+
+Ram::Ram(size_t size)
+  : memory_(std::vector<uint8_t>(size))
+{
+}
+
 uint8_t Ram::Read(uint16_t addr) const
 {
-  return ram.at(addr);
+  return memory_.Read(addr);
 }
 
 void Ram::Write(uint16_t addr, uint8_t data)
 {
-  ram.at(addr) = data;
+  memory_.Write(addr, data);
 }

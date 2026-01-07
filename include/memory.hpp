@@ -1,27 +1,26 @@
 #pragma once
 
-#include <fstream>
-#include <filesystem>
 #include <vector>
-#include <string>
 #include <cstdint>
+#include <iostream>
+#include <iomanip>
 #include <cstddef>
-
-#include "memory.hpp"
 
 using std::size_t;
 using std::uint8_t;
 using std::uint16_t;
 using std::uint32_t;
 
-class Rom {
+class Memory {
 private:
-  Memory memory_;
-  std::vector<uint8_t> Load(std::string file);
+  std::vector<uint8_t> memory_;
   
 public:
-  Rom();
-  Rom(std::string romfile);
+  Memory();
+  Memory(std::vector<uint8_t> data);
+  size_t Size() const;
   uint8_t Read(uint16_t addr) const;
+  void Write(uint16_t addr, uint8_t data);
+  uint8_t* Data();
   void Dump() const;
 };
