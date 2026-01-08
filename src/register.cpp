@@ -1,137 +1,107 @@
-#include "register.hpp"
+#include "cpu.hpp"
 
-void Register::SetPC(uint16_t addr)
+bool Cpu::Carry()
 {
-  pc_ = addr;
+  return regs_.flag >> 0 & 0b1;
 }
 
-void Register::IncPC()
+void Cpu::SetCarry()
 {
-  pc_++;
+  regs_.flag |= 0b00000001;
 }
 
-uint16_t Register::PC()
+void Cpu::UnsetCarry()
 {
-  return pc_;
+  regs_.flag &= 0b11111110;
 }
 
-uint8_t Register::A()
+bool Cpu::Zero()
 {
-  return a_;
+  return regs_.flag >> 1 & 0b1;
 }
 
-void Register::SetA(uint8_t data)
+void Cpu::SetZero()
 {
-  a_ = data;
+  regs_.flag |= 0b00000010;
 }
 
-uint8_t Register::X()
+void Cpu::UnsetZero()
 {
-  return x_;
+  regs_.flag &= 0b11111101;
 }
 
-void Register::SetX(uint8_t data)
+bool Cpu::IRQ()
 {
-  x_ = data;
+  return regs_.flag >> 2 & 0b1;
 }
 
-uint8_t Register::Y()
+void Cpu::SetIRQ()
 {
-  return y_;
+  regs_.flag |= 0b00000100;
 }
 
-void Register::SetY(uint8_t data)
+void Cpu::UnsetIRQ()
 {
-  y_ = data;
+  regs_.flag &= 0b11111011;
 }
 
-uint8_t Register::S()
+bool Cpu::Decimal()
 {
-  return s_;
+  return regs_.flag >> 3 & 0b1;
 }
 
-void Register::SetS(uint8_t data)
+void Cpu::SetDecimal()
 {
-  s_ = data;
+  regs_.flag |= 0b00001000;
 }
 
-uint8_t Register::P()
+void Cpu::UnsetDecimal()
 {
-  return p_;
+  regs_.flag &= 0b11110111;
 }
 
-void Register::SetP(uint8_t data)
+bool Cpu::Break()
 {
-  p_ = data;
+  return regs_.flag >> 4 & 0b1;
 }
 
-void Register::SetCarry()
+void Cpu::SetBreak()
 {
-  flag_ |= 0b00000001;
+  regs_.flag |= 0b00010000;
 }
 
-void Register::UnsetCarry()
+void Cpu::UnsetBreak()
 {
-  flag_ &= 0b11111110;
+  regs_.flag &= 0b11101111;
 }
 
-void Register::SetZero()
+bool Cpu::Overflow()
 {
-  flag_ |= 0b00000010;
+  return regs_.flag >> 6 & 0b1;
 }
 
-void Register::UnsetZero()
+void Cpu::SetOverflow()
 {
-  flag_ &= 0b11111101;
+  regs_.flag |= 0b01000000;
 }
 
-void Register::SetIRQ()
+void Cpu::UnsetOverflow()
 {
-  flag_ |= 0b00000100;
+  regs_.flag &= 0b10111111;
 }
 
-void Register::UnsetIRQ()
+bool Cpu::Negative()
 {
-  flag_ &= 0b11111011;
+  return regs_.flag >> 7 & 0b1;
 }
 
-void Register::SetDecimal()
+void Cpu::SetNegative()
 {
-  flag_ |= 0b00001000;
+  regs_.flag |= 0b10000000;
 }
 
-void Register::UnsetDecimal()
+void Cpu::UnsetNegative()
 {
-  flag_ &= 0b11110111;
-}
-
-void Register::SetBreak()
-{
-  flag_ |= 0b00010000;
-}
-
-void Register::UnsetBreak()
-{
-  flag_ &= 0b11101111;
-}
-
-void Register::SetOverflow()
-{
-  flag_ |= 0b01000000;
-}
-
-void Register::UnsetOverflow()
-{
-  flag_ &= 0b10111111;
-}
-
-void Register::SetNegative()
-{
-  flag_ |= 0b10000000;
-}
-
-void Register::UnsetNegative()
-{
-  flag_ &= 0b01111111;
+  regs_.flag &= 0b01111111;
 }
 

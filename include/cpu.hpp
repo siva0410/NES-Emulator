@@ -4,7 +4,6 @@
 #include <cstddef>
 
 #include "bus.hpp"
-#include "register.hpp"
 
 using std::size_t;
 using std::uint8_t;
@@ -61,12 +60,43 @@ struct OpInfo {
   uint8_t cycles;
 };
 
+struct Register {
+  uint8_t a;
+  uint8_t x;
+  uint8_t y;
+  uint8_t s;
+  uint8_t p;
+  uint16_t pc;
+  uint8_t flag = 0b00100000;
+};
+
 class Cpu {
 private:
-  Register regs_{};
   Bus& bus_;
+  Register regs_{};
   std::array<OpInfo, 256> optable_{};
   void MakeOpTable();
+  bool Carry();
+  void SetCarry();
+  void UnsetCarry();
+  bool Zero();
+  void SetZero();
+  void UnsetZero();
+  bool IRQ();
+  void SetIRQ();
+  void UnsetIRQ();
+  bool Decimal();
+  void SetDecimal();
+  void UnsetDecimal();
+  bool Break();
+  void SetBreak();
+  void UnsetBreak();
+  bool Overflow();
+  void SetOverflow();
+  void UnsetOverflow();
+  bool Negative();
+  void SetNegative();
+  void UnsetNegative();
 public:
   Cpu(Bus& bus);
   void Start();
