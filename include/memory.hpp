@@ -16,7 +16,6 @@ private:
   std::vector<uint8_t> memory_;
   
 public:
-  Memory();
   Memory(std::vector<uint8_t> data);
   size_t Size() const;
   uint8_t Read(uint16_t addr) const;

@@ -1,10 +1,5 @@
 #include "ram.hpp"
 
-Ram::Ram()
-  : Ram(0)
-{
-}
-
 Ram::Ram(size_t size)
   : memory_(std::vector<uint8_t>(size))
 {

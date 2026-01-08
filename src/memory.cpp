@@ -1,10 +1,5 @@
 #include "memory.hpp"
 
-Memory::Memory()
-  : Memory(std::vector<uint8_t>(0))
-{
-}
-
 Memory::Memory(std::vector<uint8_t> data)
   : memory_(data)
 {

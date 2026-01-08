@@ -1,10 +1,5 @@
 #include "rom.hpp"
 
-Rom::Rom()
-  : Rom("")
-{
-}
-
 Rom::Rom(std::string romfile)
   : memory_(Load(romfile))
 {

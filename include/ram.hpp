@@ -13,10 +13,9 @@ using std::uint32_t;
 
 class Ram {
 private:
-  Memory memory_{};
+  Memory memory_;
   
 public:
-  Ram();
   Ram(size_t size);
   uint8_t Read(uint16_t addr) const;
   void Write(uint16_t addr, uint8_t data);

@@ -20,7 +20,6 @@ private:
   std::vector<uint8_t> Load(std::string file);
   
 public:
-  Rom();
   Rom(std::string romfile);
   uint8_t Read(uint16_t addr) const;
   void Dump() const;
