@@ -183,4 +183,55 @@ void Cpu::MakeOpTable()
   optable_[0xF9] = { "SBC", Opcode::SBC, AddrMode::AbsY, 3, 4};
   optable_[0xE1] = { "SBC", Opcode::SBC, AddrMode::IndX, 2, 6};
   optable_[0xF1] = { "SBC", Opcode::SBC, AddrMode::IndY, 2, 5};
+
+  optable_[0x48] = { "PHA", Opcode::PHA, AddrMode::Imp, 1, 3};
+  
+  optable_[0x08] = { "PHP", Opcode::PHP, AddrMode::Imp, 1, 3};
+  
+  optable_[0x68] = { "PLA", Opcode::PLA, AddrMode::Imp, 1, 4};
+
+  optable_[0x28] = { "PHP", Opcode::PHP, AddrMode::Imp, 1, 4};
+
+  optable_[0x4C] = { "JMP", Opcode::JMP, AddrMode::Abs, 3, 3};
+  optable_[0x6C] = { "JMP", Opcode::JMP, AddrMode::Ind, 3, 5};
+
+  optable_[0x20] = { "JSR", Opcode::JSR, AddrMode::Abs, 3, 6};
+
+  optable_[0x60] = { "RTS", Opcode::RTS, AddrMode::Imp, 1, 6};
+
+  optable_[0x40] = { "RTI", Opcode::RTI, AddrMode::Imp, 1, 6};
+
+  optable_[0x90] = { "BCC", Opcode::BCC, AddrMode::Rel, 2, 2};
+
+  optable_[0xB0] = { "BCS", Opcode::BCS, AddrMode::Rel, 2, 2};
+
+  optable_[0xF0] = { "BEQ", Opcode::BEQ, AddrMode::Rel, 2, 2};
+
+  optable_[0x30] = { "BMI", Opcode::BMI, AddrMode::Rel, 2, 2};
+
+  optable_[0xD0] = { "BNE", Opcode::BNE, AddrMode::Rel, 2, 2};
+
+  optable_[0x10] = { "BPL", Opcode::BPL, AddrMode::Rel, 2, 2};
+
+  optable_[0x50] = { "BVC", Opcode::BVC, AddrMode::Rel, 2, 2};
+
+  optable_[0x70] = { "BVS", Opcode::BVS, AddrMode::Rel, 2, 2};
+
+  optable_[0x18] = { "CLC", Opcode::CLC, AddrMode::Imp, 1, 2};
+
+  optable_[0xD8] = { "CLD", Opcode::CLD, AddrMode::Imp, 1, 2};
+
+  optable_[0x58] = { "CLI", Opcode::CLI, AddrMode::Imp, 1, 2};
+
+  optable_[0xB8] = { "CLV", Opcode::CLV, AddrMode::Imp, 1, 2};
+
+  optable_[0x38] = { "SEC", Opcode::SEC, AddrMode::Imp, 1, 2};
+
+  optable_[0xF8] = { "SED", Opcode::SED, AddrMode::Imp, 1, 2};
+
+  optable_[0x78] = { "SEI", Opcode::SEI, AddrMode::Imp, 1, 2};
+
+  optable_[0x00] = { "BRK", Opcode::BRK, AddrMode::Imp, 1, 7};
+
+  optable_[0xEA] = { "NOP", Opcode::NOP, AddrMode::Imp, 1, 2};
 }
