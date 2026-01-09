@@ -105,3 +105,14 @@ void Cpu::UnsetNegative()
   regs_.flag &= 0b01111111;
 }
 
+void Cpu::UpdateZeroFlag(uint8_t data)
+{
+  if(data == 0) SetZero();
+  else UnsetZero();
+}
+
+void Cpu::UpdateNegativeFlag(uint8_t data)
+{
+  if((data>>7)&0b1) SetNegative();
+  else UnsetNegative();
+}

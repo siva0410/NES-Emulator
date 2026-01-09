@@ -97,7 +97,11 @@ private:
   bool Negative();
   void SetNegative();
   void UnsetNegative();
+
+  void UpdateZeroFlag(uint8_t data);
+  void UpdateNegativeFlag(uint8_t data);
 public:
   Cpu(Bus& bus);
   void Start();
+  void Tick();
 };

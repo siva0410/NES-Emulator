@@ -1,6 +1,9 @@
 #include <iostream>
 #include "cpu.hpp"
 
+using enum AddrMode;
+using enum Opcode;
+
 Cpu::Cpu(Bus& bus)
   : bus_(bus)
 {
@@ -9,21 +12,304 @@ Cpu::Cpu(Bus& bus)
 
 void Cpu::Start()
 {
-  regs_.pc = 0x0000;
-  uint8_t idx = bus_.Read(regs_.pc);
+  regs_.pc = 0x8000;
+}
+
+void Cpu::Tick()
+{
+  uint16_t operand{};
+  uint16_t addr{};
+  uint8_t idx{bus_.Read(regs_.pc++)};
   
-  switch(optable_[idx].mode) {
-  case AddrMode::Imp:
-    std::cout << "Imp" << std::endl;
+  switch(optable_.at(idx).mode) {
+  case Imp:
     break;
+    
+  case Acc:
+    break;
+    
+  case Imm:
+    operand = bus_.Read(regs_.pc++);
+    break;
+    
+  case Zp:
+    operand = bus_.Read(regs_.pc++);
+    break;
+    
+  case ZpX:
+    operand = bus_.Read(regs_.pc++) + regs_.x;
+    break;
+    
+  case ZpY:
+    operand = bus_.Read(regs_.pc++) + regs_.y;
+    break;
+    
+  case Abs:
+    operand = bus_.Read(regs_.pc++) | (bus_.Read(regs_.pc++)<<8);
+    break;
+    
+  case AbsX:
+    operand = (bus_.Read(regs_.pc++) | (bus_.Read(regs_.pc++)<<8)) + regs_.x;
+    break;
+    
+  case AbsY:
+    operand = (bus_.Read(regs_.pc++) | (bus_.Read(regs_.pc++)<<8)) + regs_.y;
+    break;
+    
+  case Ind:
+    addr = bus_.Read(regs_.pc++) | (bus_.Read(regs_.pc++)<<8);
+    if((addr&0xFF) == 0xFF){
+      operand = bus_.Read(addr) | (bus_.Read(addr&0xFF00)<<8);
+    } else {
+      operand = bus_.Read(addr) | (bus_.Read(addr+1)<<8);
+    }
+    break;
+    
+  case IndX:
+    addr = (bus_.Read(regs_.pc++) | (bus_.Read(regs_.pc++)<<8)) + regs_.x;
+    operand = bus_.Read(addr) | (bus_.Read(addr+1)<<8);
+    break;
+    
+  case IndY:
+    addr = bus_.Read(regs_.pc++) | (bus_.Read(regs_.pc++)<<8);
+    operand = (bus_.Read(addr) | (bus_.Read(addr+1)<<8)) + regs_.y;
+    break;
+    
+  case Rel:
+    operand = bus_.Read(regs_.pc++);
+    break;
+    
   default:
     break;
   }
-  
-  switch(optable_[idx].opcode) {
-  case Opcode::LDA:
-    std::cout << "LDA" << std::endl;
+
+  std::cout << std::hex << std::setw(4) << std::setfill('0')
+	    << static_cast<int>(regs_.pc-1) << ": "
+	    << optable_[idx].mnemonic << ": "
+	    << static_cast<int>(operand) << std::endl;
+
+  uint8_t res{};
+  switch(optable_.at(idx).opcode) {
+  case LDA:
+    if(optable_.at(idx).mode == Imm) {
+      regs_.a = operand;
+    }
+    else {
+      regs_.a = bus_.Read(operand);
+    }
+    UpdateZeroFlag(regs_.a);
+    UpdateNegativeFlag(regs_.a);
     break;
+    
+  case LDX:
+    if(optable_.at(idx).mode == Imm) {
+      regs_.x = operand;
+    }
+    else {
+      regs_.x = bus_.Read(operand);
+    }
+    UpdateZeroFlag(regs_.x);
+    UpdateNegativeFlag(regs_.x);
+    break;
+    
+  case LDY:
+    if(optable_.at(idx).mode == Imm) {
+      regs_.y = operand;
+    }
+    else {
+      regs_.y = bus_.Read(operand);
+    }
+    UpdateZeroFlag(regs_.y);
+    UpdateNegativeFlag(regs_.y);
+    break;
+    
+  case STA:
+    bus_.Write(operand, regs_.a);
+    break;
+    
+  case STX:
+    bus_.Write(operand, regs_.x);
+    break;
+    
+  case STY:
+    bus_.Write(operand, regs_.y);
+    break;
+    
+  case TAX:
+    regs_.x = regs_.a;
+    UpdateZeroFlag(regs_.x);
+    UpdateNegativeFlag(regs_.x);
+    break;
+    
+  case TAY:
+    regs_.y = regs_.a;
+    UpdateZeroFlag(regs_.y);
+    UpdateNegativeFlag(regs_.y);
+
+  case TSX:
+    regs_.x = regs_.s;
+    UpdateZeroFlag(regs_.x);
+    UpdateNegativeFlag(regs_.x);
+    break;
+    
+  case TXA:
+    regs_.a = regs_.x;
+    UpdateZeroFlag(regs_.a);
+    UpdateNegativeFlag(regs_.a);
+    break;
+    
+  case TXS:
+    regs_.s = regs_.x;
+    UpdateZeroFlag(regs_.s);
+    UpdateNegativeFlag(regs_.s);
+    break;
+
+  case TYA:
+    regs_.a = regs_.y;
+    UpdateZeroFlag(regs_.a);
+    UpdateNegativeFlag(regs_.a);
+    break;
+    
+  case ADC:
+  case AND:
+  case ASL:
+  case BIT:
+  case CMP:
+  case CPX:
+  case CPY:
+    break;
+    
+  case DEC:
+    res = bus_.Read(operand)-1;
+    bus_.Write(operand, res);
+    UpdateZeroFlag(res);
+    UpdateNegativeFlag(res);
+    break;
+    
+  case DEX:
+    regs_.x--;
+    UpdateZeroFlag(regs_.x);
+    UpdateNegativeFlag(regs_.x);
+    break;
+    
+  case DEY:
+    regs_.y--;
+    UpdateZeroFlag(regs_.y);
+    UpdateNegativeFlag(regs_.y);
+    break;
+    
+  case EOR:
+    break;
+    
+  case INC:
+    res = bus_.Read(operand)+1;
+    bus_.Write(operand, res);
+    UpdateZeroFlag(res);
+    UpdateNegativeFlag(res);
+    break;
+    
+  case INX:
+    regs_.x++;
+    UpdateZeroFlag(regs_.x);
+    UpdateNegativeFlag(regs_.x);
+    break;
+    
+  case INY:
+    regs_.y++;
+    UpdateZeroFlag(regs_.y);
+    UpdateNegativeFlag(regs_.y);
+    break;
+    
+  case LSR:
+  case ORA:
+  case ROL:
+  case ROR:
+  case SBC:
+  case PHA:
+  case PHP:
+  case PLA:
+  case PLP:
+    break;
+    
+  case JMP:
+    regs_.pc = operand;
+    break;
+    
+  case JSR:
+  case RTS:
+  case RTI:
+    break;
+    
+  case BCC:
+    if(!Carry()) regs_.pc = operand;
+    break;
+    
+  case BCS:
+    if(Carry()) regs_.pc = operand;
+    break;
+    
+  case BEQ:
+    if(Zero()) regs_.pc = operand;
+    break;
+    
+  case BMI:
+    if(Negative()) regs_.pc = operand;
+    break;
+    
+  case BNE:
+    std::cout << "Zero: " << Zero() << std::endl;
+    std::cout << "Y: " << static_cast<int>(regs_.y) << std::endl;
+    if(Zero()) regs_.pc += operand-1;
+    std::cout << regs_.pc << std::endl;
+    break;
+    
+  case BPL:
+    if(!Negative()) regs_.pc = operand;
+    break;
+    
+  case BVC:
+    if(!Overflow()) regs_.pc = operand;
+    break;
+    
+  case BVS:
+    if(Overflow()) regs_.pc = operand;
+    break;
+    
+  case CLC:
+    UnsetCarry();
+    break;
+    
+  case CLD:
+    UnsetDecimal();
+    break;
+    
+  case CLI:
+    UnsetIRQ();
+    break;
+    
+  case CLV:
+    UnsetOverflow();
+    break;
+    
+  case SEC:
+    SetCarry();
+    break;
+    
+  case SED:
+    SetDecimal();
+    break;
+    
+  case SEI:
+    SetIRQ();
+    break;
+    
+  case BRK:
+    SetBreak();
+    break;
+    
+  case NOP:
+    break;
+    
   default:
     break;
   }
@@ -34,7 +320,7 @@ void Cpu::MakeOpTable()
   // { mnemonic, opcode, mode, size, cycles}
   optable_.fill({ "???", Opcode::INVALID, AddrMode::Imp, 1, 0 });
 
-  optable_[0xA9] = { "LDA", Opcode::LDA, AddrMode::Imp, 2, 2};
+  optable_[0xA9] = { "LDA", Opcode::LDA, AddrMode::Imm, 2, 2};
   optable_[0xA5] = { "LDA", Opcode::LDA, AddrMode::Zp, 2, 3};
   optable_[0xB5] = { "LDA", Opcode::LDA, AddrMode::ZpX, 2, 4};
   optable_[0xAD] = { "LDA", Opcode::LDA, AddrMode::Abs, 3, 4};

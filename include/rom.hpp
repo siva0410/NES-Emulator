@@ -20,7 +20,9 @@ private:
   std::vector<uint8_t> Load(std::string file);
   
 public:
+  uint32_t chrromStart_;
   Rom(std::string romfile);
-  uint8_t Read(uint16_t addr) const;
+  uint8_t ReadPrgRom(uint16_t addr) const;
+  uint8_t ReadChrRom(uint16_t addr) const;
   void Dump() const;
 };
