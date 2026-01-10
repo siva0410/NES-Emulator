@@ -12,9 +12,9 @@ void Nes::SetROM(std::string romfile)
 
 void Nes::Start()
 {
-  cpu_.Start();
+  cpu_.Reset();
 
-  for(int i=0; i<100; i++){
+  for(int i=0; i<1000; i++){
     cpu_.Tick();
   }
   

@@ -72,6 +72,7 @@ struct Register {
 
 class Cpu {
 private:
+  uint8_t cycles_{};
   Bus& bus_;
   Register regs_{};
   std::array<OpInfo, 256> optable_{};
@@ -97,11 +98,10 @@ private:
   bool Negative();
   void SetNegative();
   void UnsetNegative();
-
   void UpdateZeroFlag(uint8_t data);
   void UpdateNegativeFlag(uint8_t data);
 public:
   Cpu(Bus& bus);
-  void Start();
+  void Reset();
   void Tick();
 };

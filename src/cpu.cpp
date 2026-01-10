@@ -10,17 +10,28 @@ Cpu::Cpu(Bus& bus)
   MakeOpTable();
 }
 
-void Cpu::Start()
+void Cpu::Reset()
 {
-  regs_.pc = 0x8000;
+  regs_.pc = bus_.Read(0xFFFC) | (bus_.Read(0XFFFD)<<8);
+  SetIRQ();
 }
 
 void Cpu::Tick()
 {
+  if(cycles_ > 0) {
+    cycles_--;
+    return;
+  }
+    
+  uint8_t idx{bus_.Read(regs_.pc++)};
+  cycles_ = optable_.at(idx).cycles;
+  
+  std::cout << std::hex << std::setw(4) << std::setfill('0')
+	    << static_cast<unsigned int>(regs_.pc-1) << ": "
+	    << optable_[idx].mnemonic << ": ";
+
   uint16_t operand{};
   uint16_t addr{};
-  uint8_t idx{bus_.Read(regs_.pc++)};
-  
   switch(optable_.at(idx).mode) {
   case Imp:
     break;
@@ -83,11 +94,8 @@ void Cpu::Tick()
     break;
   }
 
-  std::cout << std::hex << std::setw(4) << std::setfill('0')
-	    << static_cast<int>(regs_.pc-1) << ": "
-	    << optable_[idx].mnemonic << ": "
-	    << static_cast<int>(operand) << std::endl;
-
+  std::cout << static_cast<unsigned int>(operand) << std::endl;
+  
   uint8_t res{};
   switch(optable_.at(idx).opcode) {
   case LDA:
@@ -241,38 +249,35 @@ void Cpu::Tick()
     break;
     
   case BCC:
-    if(!Carry()) regs_.pc = operand;
+    if(!Carry()) regs_.pc += static_cast<int8_t>(operand);
     break;
     
   case BCS:
-    if(Carry()) regs_.pc = operand;
+    if(Carry()) regs_.pc += static_cast<int8_t>(operand);
     break;
     
   case BEQ:
-    if(Zero()) regs_.pc = operand;
+    if(Zero()) regs_.pc += static_cast<int8_t>(operand);
     break;
     
   case BMI:
-    if(Negative()) regs_.pc = operand;
+    if(Negative()) regs_.pc += static_cast<int8_t>(operand);
     break;
     
   case BNE:
-    std::cout << "Zero: " << Zero() << std::endl;
-    std::cout << "Y: " << static_cast<int>(regs_.y) << std::endl;
-    if(Zero()) regs_.pc += operand-1;
-    std::cout << regs_.pc << std::endl;
+    if(!Zero()) regs_.pc += static_cast<int8_t>(operand);
     break;
     
   case BPL:
-    if(!Negative()) regs_.pc = operand;
+    if(!Negative()) regs_.pc += static_cast<int8_t>(operand);
     break;
     
   case BVC:
-    if(!Overflow()) regs_.pc = operand;
+    if(!Overflow()) regs_.pc += static_cast<int8_t>(operand);
     break;
     
   case BVS:
-    if(Overflow()) regs_.pc = operand;
+    if(Overflow()) regs_.pc += static_cast<int8_t>(operand);
     break;
     
   case CLC:
