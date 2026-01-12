@@ -9,6 +9,8 @@ add_executable(nes
     src/nes.cpp
     src/bus.cpp
     src/cpu.cpp
+    src/ppubus.cpp
+    src/ppu.cpp
     src/ram.cpp
     src/rom.cpp
     src/memory.cpp

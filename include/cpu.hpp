@@ -1,11 +1,10 @@
 #pragma once
 
 #include <cstdint>
-#include <cstddef>
 
 #include "bus.hpp"
 
-using std::size_t;
+using std::int8_t;
 using std::uint8_t;
 using std::uint16_t;
 using std::uint32_t;
@@ -73,7 +72,7 @@ struct Register {
 class Cpu {
 private:
   uint8_t cycles_{};
-  Bus& bus_;
+  CpuBus& cpubus_;
   Register regs_{};
   std::array<OpInfo, 256> optable_{};
   void MakeOpTable();
@@ -101,7 +100,7 @@ private:
   void UpdateZeroFlag(uint8_t data);
   void UpdateNegativeFlag(uint8_t data);
 public:
-  Cpu(Bus& bus);
+  Cpu(CpuBus& cpubus);
   void Reset();
   void Tick();
 };

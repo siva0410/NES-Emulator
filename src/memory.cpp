@@ -5,7 +5,7 @@ Memory::Memory(std::vector<uint8_t> data)
 {
 }
 
-size_t Memory::Size() const
+uint16_t Memory::Size() const
 {
   std::cout << memory_.size() << std::endl;
   return memory_.size();

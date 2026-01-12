@@ -1,6 +1,6 @@
 #include "ram.hpp"
 
-Ram::Ram(size_t size)
+Ram::Ram(uint16_t size)
   : memory_(std::vector<uint8_t>(size))
 {
 }

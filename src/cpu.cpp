@@ -4,15 +4,15 @@
 using enum AddrMode;
 using enum Opcode;
 
-Cpu::Cpu(Bus& bus)
-  : bus_(bus)
+Cpu::Cpu(CpuBus& cpubus)
+  : cpubus_(cpubus)
 {
   MakeOpTable();
 }
 
 void Cpu::Reset()
 {
-  regs_.pc = bus_.Read(0xFFFC) | (bus_.Read(0XFFFD)<<8);
+  regs_.pc = cpubus_.Read(0xFFFC) | (cpubus_.Read(0XFFFD)<<8);
   SetIRQ();
 }
 
@@ -23,7 +23,7 @@ void Cpu::Tick()
     return;
   }
     
-  uint8_t idx{bus_.Read(regs_.pc++)};
+  uint8_t idx{cpubus_.Read(regs_.pc++)};
   cycles_ = optable_.at(idx).cycles;
   
   std::cout << std::hex << std::setw(4) << std::setfill('0')
@@ -40,54 +40,54 @@ void Cpu::Tick()
     break;
     
   case Imm:
-    operand = bus_.Read(regs_.pc++);
+    operand = cpubus_.Read(regs_.pc++);
     break;
     
   case Zp:
-    operand = bus_.Read(regs_.pc++);
+    operand = cpubus_.Read(regs_.pc++);
     break;
     
   case ZpX:
-    operand = bus_.Read(regs_.pc++) + regs_.x;
+    operand = cpubus_.Read(regs_.pc++) + regs_.x;
     break;
     
   case ZpY:
-    operand = bus_.Read(regs_.pc++) + regs_.y;
+    operand = cpubus_.Read(regs_.pc++) + regs_.y;
     break;
     
   case Abs:
-    operand = bus_.Read(regs_.pc++) | (bus_.Read(regs_.pc++)<<8);
+    operand = cpubus_.Read(regs_.pc++) | (cpubus_.Read(regs_.pc++)<<8);
     break;
     
   case AbsX:
-    operand = (bus_.Read(regs_.pc++) | (bus_.Read(regs_.pc++)<<8)) + regs_.x;
+    operand = (cpubus_.Read(regs_.pc++) | (cpubus_.Read(regs_.pc++)<<8)) + regs_.x;
     break;
     
   case AbsY:
-    operand = (bus_.Read(regs_.pc++) | (bus_.Read(regs_.pc++)<<8)) + regs_.y;
+    operand = (cpubus_.Read(regs_.pc++) | (cpubus_.Read(regs_.pc++)<<8)) + regs_.y;
     break;
     
   case Ind:
-    addr = bus_.Read(regs_.pc++) | (bus_.Read(regs_.pc++)<<8);
+    addr = cpubus_.Read(regs_.pc++) | (cpubus_.Read(regs_.pc++)<<8);
     if((addr&0xFF) == 0xFF){
-      operand = bus_.Read(addr) | (bus_.Read(addr&0xFF00)<<8);
+      operand = cpubus_.Read(addr) | (cpubus_.Read(addr&0xFF00)<<8);
     } else {
-      operand = bus_.Read(addr) | (bus_.Read(addr+1)<<8);
+      operand = cpubus_.Read(addr) | (cpubus_.Read(addr+1)<<8);
     }
     break;
     
   case IndX:
-    addr = (bus_.Read(regs_.pc++) | (bus_.Read(regs_.pc++)<<8)) + regs_.x;
-    operand = bus_.Read(addr) | (bus_.Read(addr+1)<<8);
+    addr = (cpubus_.Read(regs_.pc++) | (cpubus_.Read(regs_.pc++)<<8)) + regs_.x;
+    operand = cpubus_.Read(addr) | (cpubus_.Read(addr+1)<<8);
     break;
     
   case IndY:
-    addr = bus_.Read(regs_.pc++) | (bus_.Read(regs_.pc++)<<8);
-    operand = (bus_.Read(addr) | (bus_.Read(addr+1)<<8)) + regs_.y;
+    addr = cpubus_.Read(regs_.pc++) | (cpubus_.Read(regs_.pc++)<<8);
+    operand = (cpubus_.Read(addr) | (cpubus_.Read(addr+1)<<8)) + regs_.y;
     break;
     
   case Rel:
-    operand = bus_.Read(regs_.pc++);
+    operand = cpubus_.Read(regs_.pc++);
     break;
     
   default:
@@ -103,7 +103,7 @@ void Cpu::Tick()
       regs_.a = operand;
     }
     else {
-      regs_.a = bus_.Read(operand);
+      regs_.a = cpubus_.Read(operand);
     }
     UpdateZeroFlag(regs_.a);
     UpdateNegativeFlag(regs_.a);
@@ -114,7 +114,7 @@ void Cpu::Tick()
       regs_.x = operand;
     }
     else {
-      regs_.x = bus_.Read(operand);
+      regs_.x = cpubus_.Read(operand);
     }
     UpdateZeroFlag(regs_.x);
     UpdateNegativeFlag(regs_.x);
@@ -125,22 +125,22 @@ void Cpu::Tick()
       regs_.y = operand;
     }
     else {
-      regs_.y = bus_.Read(operand);
+      regs_.y = cpubus_.Read(operand);
     }
     UpdateZeroFlag(regs_.y);
     UpdateNegativeFlag(regs_.y);
     break;
     
   case STA:
-    bus_.Write(operand, regs_.a);
+    cpubus_.Write(operand, regs_.a);
     break;
     
   case STX:
-    bus_.Write(operand, regs_.x);
+    cpubus_.Write(operand, regs_.x);
     break;
     
   case STY:
-    bus_.Write(operand, regs_.y);
+    cpubus_.Write(operand, regs_.y);
     break;
     
   case TAX:
@@ -188,8 +188,8 @@ void Cpu::Tick()
     break;
     
   case DEC:
-    res = bus_.Read(operand)-1;
-    bus_.Write(operand, res);
+    res = cpubus_.Read(operand)-1;
+    cpubus_.Write(operand, res);
     UpdateZeroFlag(res);
     UpdateNegativeFlag(res);
     break;
@@ -210,8 +210,8 @@ void Cpu::Tick()
     break;
     
   case INC:
-    res = bus_.Read(operand)+1;
-    bus_.Write(operand, res);
+    res = cpubus_.Read(operand)+1;
+    cpubus_.Write(operand, res);
     UpdateZeroFlag(res);
     UpdateNegativeFlag(res);
     break;
