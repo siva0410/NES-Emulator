@@ -27,7 +27,7 @@ private:
   PpuBus& ppubus_;
   Ram& palletram_;
 public:
-  PpuRegister regs;
+  PpuRegister regs{};
   Ppu(PpuBus& ppubus, Ram& palletram);
   uint8_t ReadPallet(uint16_t addr) const;
   void WritePallet(uint16_t addr, uint8_t data);
