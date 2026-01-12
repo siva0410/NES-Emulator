@@ -17,4 +17,5 @@ public:
   Ram(uint16_t size);
   uint8_t Read(uint16_t addr) const;
   void Write(uint16_t addr, uint8_t data);
+  void Dump() const;
 };

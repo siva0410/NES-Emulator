@@ -15,21 +15,22 @@ uint8_t CpuBus::Read(uint16_t addr) const
   else if(addr >= 0x2000 && addr <= 0x3FFF) {
     uint8_t idx = addr&0x0007;
     switch(idx) {
-    case 0x0:
-      return ppu_.regs.ppuCtrl;
-    case 0x1:
-      return ppu_.regs.ppuMask;
+    // case 0x0:
+    //   return ppu_.regs.ppuCtrl;
+    // case 0x1:
+    //   return ppu_.regs.ppuMask;
     case 0x2:
       return ppu_.regs.ppuStatus;
-    case 0x3:
-      return ppu_.regs.oamAddr;
+    // case 0x3:
+    //   return ppu_.regs.oamAddr;
     case 0x4:
       return ppu_.regs.oamData;
-    case 0x5:
-      return ppu_.regs.ppuScroll;
-    case 0x6:
-      return ppu_.regs.ppuAddr;
+    // case 0x5:
+    //   return ppu_.regs.ppuScroll;
+    // case 0x6:
+    //   return ppu_.regs.ppuAddr;
     case 0x7:
+      ppu_.ReadPpuData();
       return ppu_.regs.ppuData;
     default:
       throw std::runtime_error("Out of ppu register.");
@@ -70,9 +71,9 @@ void CpuBus::Write(uint16_t addr, uint8_t data)
     case 0x1:
       ppu_.regs.ppuMask = data;
       break;
-    case 0x2:
-      ppu_.regs.ppuStatus = data;
-      break;
+    // case 0x2:
+    //   ppu_.regs.ppuStatus = data;
+    //   break;
     case 0x3:
       ppu_.regs.oamAddr = data;
       break;
@@ -84,9 +85,11 @@ void CpuBus::Write(uint16_t addr, uint8_t data)
       break;
     case 0x6:
       ppu_.regs.ppuAddr = data;
+      ppu_.WritePpuAddr();
       break;
     case 0x7:
       ppu_.regs.ppuData = data;
+      ppu_.WritePpuData();
       break;
     default:
       throw std::runtime_error("Out of ppu register.");

@@ -14,3 +14,8 @@ void Ram::Write(uint16_t addr, uint8_t data)
 {
   memory_.Write(addr, data);
 }
+
+void Ram::Dump() const
+{
+  memory_.Dump();
+}

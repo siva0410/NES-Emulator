@@ -22,13 +22,30 @@ struct PpuRegister {
   uint8_t oamDma;
 };
 
+struct PpuInternalRegister {
+  uint16_t v;
+  uint16_t t;
+  uint8_t x;
+  uint8_t w;
+};
+
 class Ppu {
 private:
   PpuBus& ppubus_;
   Ram& palletram_;
+  PpuInternalRegister internalRegs_{};
+  uint16_t hi_{}, lo_{}, addr_{};
+  uint16_t BaseNTAddr();
+  uint8_t IncPpuAddrSize();
+  uint16_t SpritePTAddr();
+  uint16_t BackgroundPTAddr();
+  uint8_t SpriteSize();
+  bool VblankNMI();
 public:
   PpuRegister regs{};
   Ppu(PpuBus& ppubus, Ram& palletram);
-  uint8_t ReadPallet(uint16_t addr) const;
-  void WritePallet(uint16_t addr, uint8_t data);
+  void Tick();
+  void WritePpuAddr();
+  void ReadPpuData();
+  void WritePpuData();
 };

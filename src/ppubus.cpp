@@ -32,7 +32,7 @@ uint8_t PpuBus::Read(uint16_t addr) const
     return palletram_.Read(addr&0x001F);
   }
   else {
-    throw std::runtime_error("Out of VRAM.");
+    throw std::runtime_error("Out of VRAM. (read)");
   }
 }
 
@@ -59,6 +59,6 @@ void PpuBus::Write(uint16_t addr, uint8_t data)
     palletram_.Write(addr&0x001F, data);
   }
   else {
-    throw std::runtime_error("Out of VRAM.");
+    throw std::runtime_error("Out of VRAM. (write)");
   }
 }

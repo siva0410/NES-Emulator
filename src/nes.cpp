@@ -12,12 +12,16 @@ void Nes::Start()
   for(int i=0; i<1000; i++){
     cpu_.Tick();
   }
+
+  std::cout << "-----ROM DUMP-----" << std:: endl;
+  rom_.Dump();
+  std::cout << std::endl;
   
-  for (int i=0x0000; i<0x0800; i++) {
-    if(i%0x20==0) std::cout << std::endl;
-    std::cout << std::hex << std::setw(2) << std::setfill('0')
-              << static_cast<int>(cpubus_.Read(i))
-              << ' ';
-  }
+  std::cout << "-----WRAM DUMP-----" << std:: endl;
+  wram_.Dump();
+  std::cout << std::endl;
+    
+  std::cout << "-----VRAM DUMP-----" << std:: endl;
+  vram_.Dump();
   std::cout << std::endl;
 }
