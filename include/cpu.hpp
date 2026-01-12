@@ -2,7 +2,7 @@
 
 #include <cstdint>
 
-#include "bus.hpp"
+#include "cpubus.hpp"
 
 using std::int8_t;
 using std::uint8_t;

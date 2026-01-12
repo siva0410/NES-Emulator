@@ -1,4 +1,4 @@
-#include "bus.hpp"
+#include "cpubus.hpp"
 
 CpuBus::CpuBus(Ppu& ppu, Ram& wram, Rom& rom)
   : ppu_(ppu), wram_(wram), rom_(rom)

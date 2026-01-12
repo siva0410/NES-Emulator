@@ -7,7 +7,7 @@ project(nes
 add_executable(nes
     src/main.cpp
     src/nes.cpp
-    src/bus.cpp
+    src/cpubus.cpp
     src/cpu.cpp
     src/ppubus.cpp
     src/ppu.cpp

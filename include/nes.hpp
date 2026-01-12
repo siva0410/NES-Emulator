@@ -8,7 +8,7 @@
 #include "ram.hpp"
 #include "rom.hpp"
 #include "cpu.hpp"
-#include "bus.hpp"
+#include "cpubus.hpp"
 #include "ppu.hpp"
 #include "ppubus.hpp"
 
