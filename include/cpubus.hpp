@@ -13,11 +13,12 @@ using std::uint32_t;
 
 class CpuBus {
 private:
+  Rom* rom_{};
   Ram& wram_;
-  Rom& rom_;
   Ppu& ppu_;
 public:
-  CpuBus(Ppu& ppu, Ram& wram, Rom& rom);
+  CpuBus(Ppu& ppu, Ram& wram);
+  void SetRom(Rom* rom);
   uint8_t Read(uint16_t addr) const;
   void Write(uint16_t addr, uint8_t data);
 };

@@ -1,8 +1,10 @@
 #include "nes.hpp"
+#include <memory>
 
-Nes::Nes(std::string romfile)
-  : rom_(romfile)
+void Nes::SetRom(std::string romfile)
 {
+  rom_ = std::make_unique<Rom>(romfile);
+  cpubus_.SetRom(rom_.get());
 }
 
 void Nes::Start()
@@ -14,7 +16,7 @@ void Nes::Start()
   }
 
   std::cout << "-----ROM DUMP-----" << std:: endl;
-  rom_.Dump();
+  rom_->Dump();
   std::cout << std::endl;
   
   std::cout << "-----WRAM DUMP-----" << std:: endl;

@@ -12,11 +12,12 @@ using std::uint32_t;
 
 class PpuBus {
 private:
+  Rom* rom_{};
   Ram& vram_;
   Ram& palletram_;
-  Rom& rom_;
 public:
-  PpuBus(Ram& vram, Ram& palletram, Rom& rom);
+  PpuBus(Ram& vram, Ram& palletram);
+  void SetRom(Rom* rom);
   uint8_t Read(uint16_t addr) const;
   void Write(uint16_t addr, uint8_t data);
 };

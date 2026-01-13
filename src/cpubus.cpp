@@ -1,8 +1,13 @@
 #include "cpubus.hpp"
 
-CpuBus::CpuBus(Ppu& ppu, Ram& wram, Rom& rom)
-  : ppu_(ppu), wram_(wram), rom_(rom)
+CpuBus::CpuBus(Ppu& ppu, Ram& wram)
+  : ppu_(ppu), wram_(wram)
 {
+}
+
+void CpuBus::SetRom(Rom* rom)
+{
+  rom_ = rom;
 }
 
 uint8_t CpuBus::Read(uint16_t addr) const
@@ -48,7 +53,7 @@ uint8_t CpuBus::Read(uint16_t addr) const
   }
   /* PRG_ROM */
   else if(addr >= 0x8000 && addr <= 0xFFFF) {
-    return rom_.ReadPrgRom(addr&0x7FFF);
+    return rom_->ReadPrgRom(addr&0x7FFF);
   }
   else {
     throw std::runtime_error("Out of PRG_ROM.");

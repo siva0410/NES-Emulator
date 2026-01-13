@@ -1,15 +1,20 @@
 #include "ppubus.hpp"
 
-PpuBus::PpuBus(Ram& vram, Ram& palletram, Rom& rom)
-  : vram_(vram), palletram_(palletram), rom_(rom)
+PpuBus::PpuBus(Ram& vram, Ram& palletram)
+  : vram_(vram), palletram_(palletram)
 {
+}
+
+void PpuBus::SetRom(Rom* rom)
+{
+  rom_ = rom;
 }
 
 uint8_t PpuBus::Read(uint16_t addr) const
 {
   /* CHR_ROM */
   if(addr >= 0x0000 && addr <= 0x1FFF) {
-    return rom_.ReadChrRom(addr);
+    return rom_->ReadChrRom(addr);
   }
   /* VRAM NT0 */
   else if(addr >= 0x2000 && addr <= 0x23FF) {

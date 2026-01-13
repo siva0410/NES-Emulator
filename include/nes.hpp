@@ -18,15 +18,15 @@ using std::uint32_t;
 
 class Nes {
 private:
-  Rom rom_;
+  std::unique_ptr<Rom> rom_{};
   Ram wram_{0x0800};
   Ram vram_{0x0800};
   Ram palletram_{0x0020};
   Cpu cpu_{cpubus_};
   Ppu ppu_{ppubus_, palletram_};
-  CpuBus cpubus_{ppu_, wram_, rom_};
-  PpuBus ppubus_{vram_, palletram_, rom_};
+  CpuBus cpubus_{ppu_, wram_};
+  PpuBus ppubus_{vram_, palletram_};
 public:
-  Nes(std::string romfile);
+  void SetRom(std::string romfile);
   void Start();
 };
