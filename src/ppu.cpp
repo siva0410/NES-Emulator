@@ -1,21 +1,24 @@
 #include "ppu.hpp"
 
-Ppu::Ppu(PpuBus& ppubus, Ram& palletram)
-  : ppubus_(ppubus), palletram_(palletram)
+Ppu::Ppu(PpuBus& ppubus, Ram& palletram, Display& display)
+  : ppubus_(ppubus), palletram_(palletram), display_(display)
 {
 }
 
 void Ppu::Tick()
 {
-  if(!internalRegs_.w) {
-    internalRegs_.v = regs.ppuAddr<<8;
-    internalRegs_.w = 1;
-  } else {
-    internalRegs_.v |= regs.ppuAddr;
-    ppubus_.Write(internalRegs_.v, regs.ppuData);
-    internalRegs_.v += IncPpuAddrSize();
-    internalRegs_.w = 0;
-  }
+  // for(uint32_t i=0; i<=16*15; i++) {
+  //   uint8_t pallet = palletram_.Read(i);
+  //   for(uint32_t j=0; j<=2*2; j++) {
+  //     uint8_t chr = ppubus_.Read(0x2000+ i*j);
+  //     uint8_t sprite = ppubus_.Read(0x10*chr);
+  //     for(uint32_t k=0; k<=8*8; k++) {
+  // 	Point p = {(i*j)%32 + k%8, (i*j)/32 + k/8};
+  // 	display_.Write(p, )
+  //     } 
+  //   }
+  //   uint8_t sprite = ppubus_.Read(i);
+  // }
 }
 
 void Ppu::WritePpuAddr()
@@ -101,3 +104,4 @@ uint8_t Ppu::SpriteSize()
 bool Ppu::VblankNMI() {
   return regs.ppuCtrl>>7 & 0b1;
 }
+

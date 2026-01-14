@@ -15,6 +15,7 @@ add_executable(nes
     src/rom.cpp
     src/memory.cpp
     src/register.cpp
+    src/display.cpp
 )
 
 target_include_directories(nes
