@@ -4,6 +4,7 @@
 #include <iomanip>
 #include <string>
 #include <cstdint>
+#include <SDL2/SDL.h>
 
 #include "ram.hpp"
 #include "rom.hpp"
@@ -31,4 +32,5 @@ private:
 public:
   void SetRom(std::string romfile);
   void Start();
+  bool WindowStart();
 };

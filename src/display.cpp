@@ -2,17 +2,27 @@
 
 void Display::Write(Point p, RGB color)
 {
-  display_.at(p.x+p.y*256) = color.r<<4 | color.g<<2 | color.b;
+  display_.at(p.x+p.y*256) = color;
 }
 
-void Display::Dump() const
+RGB Display::Read(Point p) const
 {
-  for(int i=0; i<240; i++) {
-    for(int j=0; j<256; j++){
-      std::cout << std::hex << std::setw(2) << std::setfill('0')
-		<< static_cast<unsigned int>(display_.at(i*256+j))
-		<< "";
-    }
-    std::cout << std::endl;
-  }
+  return display_.at(p.x+p.y*256);
 }
+
+// void Display::Write(Point p, uint8_t data)
+// {
+//   display_.at(p.x+p.y*256) = data;
+// }
+
+// void Display::Dump() const
+// {
+//   for(int y=0; y<240; y++) {
+//     for(int x=0; x<256; x++){
+//       std::cout << std::hex << std::setw(2) << std::setfill('0')
+// 		<< static_cast<unsigned int>(display_.at(x+y*256))
+// 		<< "";
+//     }
+//     std::cout << std::endl;
+//   }
+// }

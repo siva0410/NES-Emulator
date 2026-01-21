@@ -1,4 +1,5 @@
 #include "ppu.hpp"
+#include "display.hpp"
 
 Ppu::Ppu(PpuBus& ppubus, Ram& palletram, Display& display)
   : ppubus_(ppubus), palletram_(palletram), display_(display)
@@ -7,18 +8,27 @@ Ppu::Ppu(PpuBus& ppubus, Ram& palletram, Display& display)
 
 void Ppu::Tick()
 {
-  // for(uint32_t i=0; i<=16*15; i++) {
-  //   uint8_t pallet = palletram_.Read(i);
-  //   for(uint32_t j=0; j<=2*2; j++) {
-  //     uint8_t chr = ppubus_.Read(0x2000+ i*j);
-  //     uint8_t sprite = ppubus_.Read(0x10*chr);
-  //     for(uint32_t k=0; k<=8*8; k++) {
-  // 	Point p = {(i*j)%32 + k%8, (i*j)/32 + k/8};
-  // 	display_.Write(p, )
-  //     } 
-  //   }
-  //   uint8_t sprite = ppubus_.Read(i);
-  // }
+  for(uint32_t y=0; y<30; y++) {
+    for(uint32_t x=0; x<32; x++) {
+      // Attribute
+      uint8_t attrByte = ppubus_.Read(0x23C0+x/4+y/4*8);
+      uint8_t attrIdx = (x/2)&0b01 | (((y/2)<<1)&0b10)<<1;
+      uint8_t attrNum = (attrByte >> attrIdx) & 0b11;
+      uint16_t colorPalletAddr = 0x3F00+attrNum*4;
+      // Sprite
+      uint8_t spriteIdx = ppubus_.Read(0x2000+x+32*y);
+      for(uint32_t spriteY=0; spriteY<8; spriteY++) {
+	uint8_t spriteLow = ppubus_.Read(0x10*spriteIdx+spriteY);
+	uint8_t spriteHi = ppubus_.Read(0x10*spriteIdx+spriteY+0x8);
+	for(uint32_t spriteX=0; spriteX<8; spriteX++) {
+	  uint8_t spriteNum = spriteLow>>(7-spriteX) & 0x1 | (spriteHi>>(7-spriteX) & 0x1) << 1;
+	  Point p{x*8+spriteX, y*8+spriteY};
+	  uint8_t colorIdx = ppubus_.Read(colorPalletAddr+spriteNum);
+	  display_.Write(p, pallet_.at(colorIdx));
+	}
+      }
+    }
+  }
 }
 
 void Ppu::WritePpuAddr()

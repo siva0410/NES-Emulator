@@ -18,6 +18,15 @@ add_executable(nes
     src/display.cpp
 )
 
+find_package(SDL2 REQUIRED)
+include_directories(nes
+    ${SDL2_INCLUDE_DIRS}
+)
+
+target_link_libraries(nes
+    ${SDL2_LIBRARIES}
+)
+
 target_include_directories(nes
     PRIVATE include
 )

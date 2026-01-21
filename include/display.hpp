@@ -22,8 +22,10 @@ struct Point {
 
 class Display {
 private:
-  std::array<uint8_t,256*240> display_{};
+  // std::array<uint8_t,256*240> display_{};
+  std::array<RGB,256*240> display_{};
 public:
   void Write(Point p, RGB color);
+  RGB Read(Point p) const;
   void Dump() const;
 };
