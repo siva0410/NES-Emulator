@@ -35,6 +35,8 @@ private:
   Display& display_;
   PpuBus& ppubus_;
   Ram& palletram_;
+  uint32_t cycles_{};
+  uint32_t lines_{};
   PpuInternalRegister internalRegs_{};
   std::array<RGB,64> pallet_{
     {
@@ -56,6 +58,8 @@ private:
       {0x00,0xFC,0xFC}, {0xF8,0xD8,0xF8}, {0x00,0x00,0x00}, {0x00,0x00,0x00}
     }
   };
+  void DrawBGPattern(Point p);
+  uint8_t GetBGColorPallet(Point p, uint8_t patternNum);
   uint16_t BaseNTAddr();
   uint8_t IncPpuAddrSize();
   uint16_t SpritePTAddr();
@@ -65,7 +69,7 @@ private:
 public:
   PpuRegister regs{};
   Ppu(PpuBus& ppubus, Ram& palletram, Display& display);
-  void Tick();
+  void Clock();
   void WritePpuAddr();
   void ReadPpuData();
   void WritePpuData();

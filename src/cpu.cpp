@@ -16,7 +16,7 @@ void Cpu::Reset()
   SetIRQ();
 }
 
-void Cpu::Tick()
+void Cpu::Clock()
 {
   if(cycles_ > 0) {
     cycles_--;

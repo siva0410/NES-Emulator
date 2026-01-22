@@ -6,28 +6,48 @@ Ppu::Ppu(PpuBus& ppubus, Ram& palletram, Display& display)
 {
 }
 
-void Ppu::Tick()
+uint8_t Ppu::GetBGColorPallet(Point p, uint8_t patternNum)
 {
-  for(uint32_t y=0; y<30; y++) {
-    for(uint32_t x=0; x<32; x++) {
-      // Attribute
-      uint8_t attrByte = ppubus_.Read(0x23C0+x/4+y/4*8);
-      uint8_t attrIdx = (x/2)&0b01 | (((y/2)<<1)&0b10)<<1;
-      uint8_t attrNum = (attrByte >> attrIdx) & 0b11;
-      uint16_t colorPalletAddr = 0x3F00+attrNum*4;
-      // Sprite
-      uint8_t spriteIdx = ppubus_.Read(0x2000+x+32*y);
-      for(uint32_t spriteY=0; spriteY<8; spriteY++) {
-	uint8_t spriteLow = ppubus_.Read(0x10*spriteIdx+spriteY);
-	uint8_t spriteHi = ppubus_.Read(0x10*spriteIdx+spriteY+0x8);
-	for(uint32_t spriteX=0; spriteX<8; spriteX++) {
-	  uint8_t spriteNum = spriteLow>>(7-spriteX) & 0x1 | (spriteHi>>(7-spriteX) & 0x1) << 1;
-	  Point p{x*8+spriteX, y*8+spriteY};
-	  uint8_t colorIdx = ppubus_.Read(colorPalletAddr+spriteNum);
-	  display_.Write(p, pallet_.at(colorIdx));
-	}
-      }
+  uint8_t attrByte = ppubus_.Read(0x23C0+p.x/4+p.y/4*8);
+  uint8_t attrIdx = (p.x/2)&0b01 | (((p.y/2)<<1)&0b10)<<1;
+  uint8_t attrNum = (attrByte >> attrIdx) & 0b11;
+  uint8_t colorIdx = ppubus_.Read(0x3F00+attrNum*4+patternNum);
+  return colorIdx;
+}
+
+void Ppu::DrawBGPattern(Point p)
+{
+  uint8_t chrIdx = ppubus_.Read(0x2000+p.x+32*p.y);
+  for(uint32_t y=0; y<8; y++) {
+    uint8_t patternLow = ppubus_.Read(0x10*chrIdx+y);
+    uint8_t patternHi = ppubus_.Read(0x10*chrIdx+y+0x8);
+    for(uint32_t x=0; x<8; x++) {
+      Point patternPoint{p.x*8+x, p.y*8+y};
+      uint8_t patternNum = patternLow>>(7-x) & 0x1 | (patternHi>>(7-x) & 0x1) << 1;
+      display_.Write(patternPoint, pallet_.at(GetBGColorPallet(p, patternNum)));
     }
+  }
+}
+
+void Ppu::Clock()
+{
+  cycles_++;
+  if (cycles_ <= 340) {
+    return;
+  }
+  cycles_ = 0;
+  lines_++;
+  
+  if (lines_ <= 240 and lines_%8 == 0) {
+    for(uint32_t x=0; x<32; x++) {
+      uint32_t y = lines_/8-1;
+      Point p{x,y};
+      DrawBGPattern(p);
+    }
+  }
+  if (lines_ >= 262) {
+    display_.Update();
+    lines_ = 0;
   }
 }
 

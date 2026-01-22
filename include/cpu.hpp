@@ -102,5 +102,5 @@ private:
 public:
   Cpu(CpuBus& cpubus);
   void Reset();
-  void Tick();
+  void Clock();
 };
