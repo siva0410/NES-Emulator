@@ -34,7 +34,12 @@ uint8_t PpuBus::Read(uint16_t addr) const
   }
   /* Pallet RAM and Mirros */
   else if(addr >= 0x3F00 && addr <= 0x3FFF) {
-    return palletram_.Read(addr&0x001F);
+    addr = addr&0x001F;
+    if(addr == 0x10) addr = 0x00;
+    if(addr == 0x14) addr = 0x04;
+    if(addr == 0x18) addr = 0x08;
+    if(addr == 0x1C) addr = 0x0C;
+    return palletram_.Read(addr);
   }
   else {
     throw std::runtime_error("Out of VRAM. (read)");
@@ -61,7 +66,12 @@ void PpuBus::Write(uint16_t addr, uint8_t data)
   }
   /* Pallet RAM and Mirros */
   else if(addr >= 0x3F00 && addr <= 0x3FFF) {
-    palletram_.Write(addr&0x001F, data);
+    addr = addr&0x001F;
+    if(addr == 0x10) addr = 0x00;
+    if(addr == 0x14) addr = 0x04;
+    if(addr == 0x18) addr = 0x08;
+    if(addr == 0x1C) addr = 0x0C;
+    palletram_.Write(addr, data);
   }
   else {
     throw std::runtime_error("Out of VRAM. (write)");

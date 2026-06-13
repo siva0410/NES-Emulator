@@ -183,8 +183,54 @@ void Cpu::Clock()
   case ASL:
   case BIT:
   case CMP:
+    if(optable_.at(idx).mode == Imm) {
+      res = regs_.a - operand;
+    }
+    else {
+      res = regs_.a - cpubus_.Read(operand);
+    }
+    if(res >= 0){
+      SetCarry();
+    }
+    else {
+      UnsetCarry();
+    }
+    UpdateZeroFlag(res);
+    UpdateNegativeFlag(res);
+    break;
+    
   case CPX:
+    if(optable_.at(idx).mode == Imm) {
+      res = regs_.x - operand;
+    }
+    else {
+      res = regs_.x - cpubus_.Read(operand);
+    }
+    if(res >= 0){
+      SetCarry();
+    }
+    else {
+      UnsetCarry();
+    }
+    UpdateZeroFlag(res);
+    UpdateNegativeFlag(res);
+    break;
+    
   case CPY:
+    if(optable_.at(idx).mode == Imm) {
+      res = regs_.y - operand;
+    }
+    else {
+      res = regs_.y - cpubus_.Read(operand);
+    }
+    if(res >= 0){
+      SetCarry();
+    }
+    else {
+      UnsetCarry();
+    }
+    UpdateZeroFlag(res);
+    UpdateNegativeFlag(res);
     break;
     
   case DEC:

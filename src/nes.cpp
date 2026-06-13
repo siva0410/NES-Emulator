@@ -39,4 +39,8 @@ void Nes::Start()
   std::cout << "-----VRAM DUMP-----" << std:: endl;
   vram_.Dump();
   std::cout << std::endl;
+
+  std::cout << "-----PALLET DUMP-----" << std:: endl;
+  palletram_.Dump();
+  std::cout << std::endl;
 }

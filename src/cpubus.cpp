@@ -24,19 +24,18 @@ uint8_t CpuBus::Read(uint16_t addr) const
     //   return ppu_.regs.ppuCtrl;
     // case 0x1:
     //   return ppu_.regs.ppuMask;
-    case 0x2:
-      return ppu_.regs.ppuStatus;
+    case 0x2:      
+      return ppu_.ReadPpuStatus();
     // case 0x3:
     //   return ppu_.regs.oamAddr;
     case 0x4:
-      return ppu_.regs.oamData;
+      return ppu_.ReadOamData();
     // case 0x5:
     //   return ppu_.regs.ppuScroll;
     // case 0x6:
     //   return ppu_.regs.ppuAddr;
     case 0x7:
-      ppu_.ReadPpuData();
-      return ppu_.regs.ppuData;
+      return ppu_.ReadPpuData();
     default:
       throw std::runtime_error("Out of ppu register.");
     }
@@ -80,21 +79,19 @@ void CpuBus::Write(uint16_t addr, uint8_t data)
     //   ppu_.regs.ppuStatus = data;
     //   break;
     case 0x3:
-      ppu_.regs.oamAddr = data;
+      ppu_.WriteOamAddr(data);
       break;
     case 0x4:
-      ppu_.regs.oamData = data;
+      ppu_.WriteOamData(data);
       break;
     case 0x5:
       ppu_.regs.ppuScroll = data;
       break;
     case 0x6:
-      ppu_.regs.ppuAddr = data;
-      ppu_.WritePpuAddr();
+      ppu_.WritePpuAddr(data);
       break;
     case 0x7:
-      ppu_.regs.ppuData = data;
-      ppu_.WritePpuData();
+      ppu_.WritePpuData(data);
       break;
     default:
       throw std::runtime_error("Out of ppu register.");
