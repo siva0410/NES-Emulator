@@ -16,6 +16,7 @@ add_executable(nes
     src/memory.cpp
     src/register.cpp
     src/display.cpp
+    src/controller.cpp
 )
 
 find_package(SDL2 REQUIRED)

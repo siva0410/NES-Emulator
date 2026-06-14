@@ -1,7 +1,7 @@
 #include "cpubus.hpp"
 
-CpuBus::CpuBus(Ppu& ppu, Ram& wram)
-  : ppu_(ppu), wram_(wram)
+CpuBus::CpuBus(Ppu& ppu, Ram& wram, Controller& controller1, Controller& controller2)
+  : ppu_(ppu), wram_(wram), controller1_(controller1), controller2_(controller2)
 {
 }
 
@@ -46,6 +46,10 @@ uint8_t CpuBus::Read(uint16_t addr) const
     switch(idx) {
     case 0x14:
       return ppu_.regs.oamDma;
+    case 0x16:
+      return controller1_.Read();
+    case 0x17:
+      return controller2_.Read();
     default:
       throw std::runtime_error("Out of apu or i/o register.");
     }
@@ -103,6 +107,13 @@ void CpuBus::Write(uint16_t addr, uint8_t data)
     switch(idx) {
     case 0x14:
       ppu_.regs.oamDma = data;
+      break;
+    case 0x16:
+      controller1_.Write(data);
+      break;
+    case 0x17:
+      controller2_.Write(data);
+      break;
     default:
       throw std::runtime_error("Out of apu or i/o registers.");
     }

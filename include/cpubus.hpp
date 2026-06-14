@@ -6,6 +6,7 @@
 #include "ram.hpp"
 #include "rom.hpp"
 #include "ppu.hpp"
+#include "controller.hpp"
 
 using std::uint8_t;
 using std::uint16_t;
@@ -16,8 +17,10 @@ private:
   Rom* rom_{};
   Ram& wram_;
   Ppu& ppu_;
+  Controller& controller1_;
+  Controller& controller2_;
 public:
-  CpuBus(Ppu& ppu, Ram& wram);
+  CpuBus(Ppu& ppu, Ram& wram, Controller& controller1, Controller& controller2);
   void SetRom(Rom* rom);
   uint8_t Read(uint16_t addr) const;
   void Write(uint16_t addr, uint8_t data);

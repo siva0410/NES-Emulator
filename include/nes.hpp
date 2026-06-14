@@ -13,6 +13,7 @@
 #include "ppu.hpp"
 #include "ppubus.hpp"
 #include "display.hpp"
+#include "controller.hpp"
 
 using std::uint8_t;
 using std::uint16_t;
@@ -20,14 +21,17 @@ using std::uint32_t;
 
 class Nes {
 private:
+  void KeyboardHandler(const SDL_Event& event);
   std::unique_ptr<Rom> rom_{};
   Display display_{};
+  Controller controller1_{};
+  Controller controller2_{};
   Ram wram_{0x0800};
   Ram vram_{0x0800};
   Ram palletram_{0x0020};
   Cpu cpu_{cpubus_};
   Ppu ppu_{ppubus_, palletram_, display_};
-  CpuBus cpubus_{ppu_, wram_};
+  CpuBus cpubus_{ppu_, wram_, controller1_, controller2_};
   PpuBus ppubus_{vram_, palletram_};
 public:
   void SetRom(std::string romfile);

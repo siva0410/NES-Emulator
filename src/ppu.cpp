@@ -97,17 +97,7 @@ void Ppu::DrawBGPattern(Point p)
 void Ppu::Clock()
 {
   cycles_++;
-  
-  // enter Vblank
-  if (lines_ == 241 and cycles_ == 1) {
-    SetVblank();
-    // nmi     
-  }
-
-  if (lines_ == 261 and cycles_ == 1) {
-    ClearVblank();
-  }
-  
+   
   if (cycles_ <= 340) {
     return;
   }
@@ -116,6 +106,7 @@ void Ppu::Clock()
   lines_++;
   
   if (lines_ <= 240 and lines_%8 == 0) {
+    SetVblank();
     for(uint32_t x=0; x<32; x++) {
       uint32_t y = lines_/8-1;
       Point p{x,y};
@@ -127,6 +118,7 @@ void Ppu::Clock()
     oam_.Dump();
     display_.Update();
     lines_ = 0;
+    ClearVblank();
   }
 }
 

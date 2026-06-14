@@ -194,6 +194,7 @@ void Cpu::Clock()
     }
     UpdateZeroFlag(regs_.a);
     UpdateNegativeFlag(regs_.a);
+    // TODO: Update Overflowflag
     break;
     
   case AND:
