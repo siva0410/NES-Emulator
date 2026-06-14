@@ -111,6 +111,12 @@ void Cpu::UpdateZeroFlag(uint8_t data)
   else UnsetZero();
 }
 
+void Cpu::UpdateOverflowFlag(uint8_t data)
+{
+  if((data>>6)&0b1) SetOverflow();
+  else UnsetOverflow();
+}
+
 void Cpu::UpdateNegativeFlag(uint8_t data)
 {
   if((data>>7)&0b1) SetNegative();

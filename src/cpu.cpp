@@ -97,6 +97,7 @@ void Cpu::Clock()
   std::cout << static_cast<unsigned int>(operand) << std::endl;
   
   uint8_t res{};
+  uint16_t res16{};
   switch(optable_.at(idx).opcode) {
   case LDA:
     if(optable_.at(idx).mode == Imm) {
@@ -179,9 +180,55 @@ void Cpu::Clock()
     break;
     
   case ADC:
+    if(optable_.at(idx).mode == Imm) {
+      res16 = regs_.a + operand + Carry();
+      if(res16>>8 & 0b1) SetCarry();
+      else UnsetCarry();
+      regs_.a = res16 & 0xFF;
+    }
+    else {
+      res16 = regs_.a + cpubus_.Read(operand) + Carry();
+      if(res16>>8 & 0b1) SetCarry();
+      else UnsetCarry();
+      regs_.a = res16 & 0xFF;
+    }
+    UpdateZeroFlag(regs_.a);
+    UpdateNegativeFlag(regs_.a);
+    break;
+    
   case AND:
+    if(optable_.at(idx).mode == Imm) {
+      regs_.a = regs_.a & operand;
+    }
+    else {
+      regs_.a = regs_.a & cpubus_.Read(operand);
+    }
+    UpdateZeroFlag(regs_.a);
+    UpdateNegativeFlag(regs_.a);
+    break;
+    
   case ASL:
+    if(optable_.at(idx).mode == Acc) {
+      if(regs_.a>>7 & 0b1) SetCarry();
+      else UnsetCarry();
+      res = regs_.a << 1;
+    }
+    else {
+      if(cpubus_.Read(operand)>>7 & 0b1) SetCarry();
+      else UnsetCarry();
+      res = cpubus_.Read(operand) << 1;
+    }
+    UpdateZeroFlag(res);
+    UpdateNegativeFlag(res);
+    break;
+    
   case BIT:
+    res = regs_.a & cpubus_.Read(operand);
+    UpdateZeroFlag(res);
+    UpdateOverflowFlag(cpubus_.Read(operand));
+    UpdateNegativeFlag(cpubus_.Read(operand));
+    break;
+    
   case CMP:
     if(optable_.at(idx).mode == Imm) {
       res = regs_.a - operand;
@@ -253,6 +300,14 @@ void Cpu::Clock()
     break;
     
   case EOR:
+    if(optable_.at(idx).mode == Imm) {
+      regs_.a = regs_.a ^ operand;
+    }
+    else {
+      regs_.a = regs_.a ^ cpubus_.Read(operand);
+    }
+    UpdateZeroFlag(regs_.a);
+    UpdateNegativeFlag(regs_.a);
     break;
     
   case INC:
@@ -275,10 +330,26 @@ void Cpu::Clock()
     break;
     
   case LSR:
+    if(optable_.at(idx).mode == Acc) {
+      if(regs_.a & 0b1) SetCarry();
+      else UnsetCarry();
+      res = regs_.a >> 1;
+    }
+    else {
+      if(cpubus_.Read(operand) & 0b1) SetCarry();
+      else UnsetCarry();
+      res = cpubus_.Read(operand) >> 1;
+    }
+    UpdateZeroFlag(res);
+    UpdateNegativeFlag(res);
+    break;
+    
   case ORA:
   case ROL:
   case ROR:
   case SBC:
+    break;
+    
   case PHA:
   case PHP:
   case PLA:
