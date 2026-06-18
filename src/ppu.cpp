@@ -47,8 +47,8 @@ void Ppu::DrawSprPattern(Point p, uint8_t attr, uint16_t chrIdx)
     else {
       wy = y;
     }
-    uint8_t patternLow = ppubus_.Read(patternAddr+wy);
-    uint8_t patternHi = ppubus_.Read(patternAddr+wy+0x8);
+    uint8_t patternLow = ppubus_.Read(patternAddr+y);
+    uint8_t patternHi = ppubus_.Read(patternAddr+y+0x8);
     for(uint32_t x=0; x<8; x++) {
       if(flipHorizon){
 	wx = 7-x;
@@ -56,7 +56,7 @@ void Ppu::DrawSprPattern(Point p, uint8_t attr, uint16_t chrIdx)
       else {
 	wx = x;
       }
-      uint8_t patternIdx = patternLow>>(7-wx) & 0x1 | (patternHi>>(7-wx) & 0x1) << 1;
+      uint8_t patternIdx = patternLow>>(7-x) & 0x1 | (patternHi>>(7-x) & 0x1) << 1;
       Point patternPoint{p.x+wx, p.y+wy};
       display_.Write(patternPoint, GetSprColor(palletIdx, patternIdx));
     }
@@ -167,7 +167,11 @@ void Ppu::WriteOamData(uint8_t data)
 {
   regs.oamData = data;
   oam_.Write(internalRegs_.oam++, regs.oamData);
-  // internalRegs_.oam++;
+}
+
+void Ppu::WriteOam(uint16_t addr, uint8_t data)
+{
+  oam_.Write(addr, data);
 }
 
 uint16_t Ppu::BaseNTAddr()

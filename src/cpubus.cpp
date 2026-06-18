@@ -104,9 +104,12 @@ void CpuBus::Write(uint16_t addr, uint8_t data)
   /* APU or I/O registers */
   else if(addr >= 0x4000 && addr <= 0x401F) {
     uint8_t idx = addr&0x001F;
+    uint16_t dmaAddr = data << 8;
     switch(idx) {
     case 0x14:
-      ppu_.regs.oamDma = data;
+      for (uint32_t oamAddr=0; oamAddr<0x100; oamAddr++) {
+	ppu_.WriteOam(oamAddr, wram_.Read(dmaAddr+oamAddr));
+      }
       break;
     case 0x16:
       controller1_.Write(data);

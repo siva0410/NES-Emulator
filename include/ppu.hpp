@@ -87,5 +87,6 @@ public:
   void WriteOamAddr(uint8_t data);
   uint8_t ReadOamData();
   void WriteOamData(uint8_t data);
+  void WriteOam(uint16_t addr, uint8_t data);
   uint8_t ReadPpuStatus();
 };
