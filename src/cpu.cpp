@@ -16,6 +16,32 @@ void Cpu::Reset()
   SetIRQ();
 }
 
+void Cpu::Push(uint8_t value)
+{
+  cpubus_.Write(0x100|regs_.s, value);
+  regs_.s--;
+}
+
+void Cpu::Push16(uint16_t value)
+{
+  uint8_t lo = regs_.pc & 0xFF;
+  uint8_t hi = regs_.pc>>8 & 0xFF;
+  Push(hi);
+  Push(lo);
+}
+
+uint8_t Cpu::Pull()
+{
+  regs_.s++;
+  return cpubus_.Read(0x100|regs_.s);
+}
+
+uint16_t Cpu::Pull16()
+{
+  uint8_t lo = Pull();
+  uint8_t hi = Pull();
+  return lo | hi<<8;
+}
 void Cpu::Clock()
 {
   if(cycles_ > 0) {
@@ -32,6 +58,8 @@ void Cpu::Clock()
 
   uint16_t operand{};
   uint16_t addr{};
+  uint8_t arg1{};
+  uint8_t arg2{};
   switch(optable_.at(idx).mode) {
   case Imp:
     break;
@@ -181,20 +209,21 @@ void Cpu::Clock()
     
   case ADC:
     if(optable_.at(idx).mode == Imm) {
-      res16 = regs_.a + operand + Carry();
-      if(res16>>8 & 0b1) SetCarry();
-      else UnsetCarry();
-      regs_.a = res16 & 0xFF;
+      arg1 = regs_.a;
+      arg2 = operand;
     }
     else {
-      res16 = regs_.a + cpubus_.Read(operand) + Carry();
-      if(res16>>8 & 0b1) SetCarry();
-      else UnsetCarry();
-      regs_.a = res16 & 0xFF;
+      arg1 = regs_.a;
+      arg2 = cpubus_.Read(operand);
     }
+    res16 = arg1 + arg2 + Carry();
+    regs_.a = res16 & 0xFF;
+    
+    if(res16>>8 & 0b1) SetCarry();
+    else UnsetCarry();
     UpdateZeroFlag(regs_.a);
+    UpdateOverflowFlag(arg1, arg2, res16);
     UpdateNegativeFlag(regs_.a);
-    // TODO: Update Overflowflag
     break;
     
   case AND:
@@ -224,10 +253,17 @@ void Cpu::Clock()
     break;
     
   case BIT:
-    res = regs_.a & cpubus_.Read(operand);
+    arg1 = regs_.a;
+    arg2 = cpubus_.Read(operand);
+    res = arg1 & arg2;
+    if(arg2>>6 & 0b1) {
+      SetOverflow();
+    }
+    else {
+      UnsetOverflow();
+    }
     UpdateZeroFlag(res);
-    UpdateOverflowFlag(cpubus_.Read(operand));
-    UpdateNegativeFlag(cpubus_.Read(operand));
+    UpdateNegativeFlag(arg2);
     break;
     
   case CMP:
@@ -362,7 +398,14 @@ void Cpu::Clock()
     break;
     
   case JSR:
+    Push16(regs_.pc-1);
+    regs_.pc = operand;
+    break;
+    
   case RTS:
+    regs_.pc = Pull16()+1;
+    break;
+    
   case RTI:
     break;
     

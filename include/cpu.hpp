@@ -63,7 +63,7 @@ struct Register {
   uint8_t a;
   uint8_t x;
   uint8_t y;
-  uint8_t s;
+  uint8_t s = 0xFD;
   uint8_t p;
   uint16_t pc;
   uint8_t flag = 0b00100000;
@@ -75,6 +75,10 @@ private:
   CpuBus& cpubus_;
   Register regs_{};
   std::array<OpInfo, 256> optable_{};
+  void Push(uint8_t value);
+  void Push16(uint16_t value);
+  uint8_t Pull();
+  uint16_t Pull16();
   void MakeOpTable();
   bool Carry();
   void SetCarry();
@@ -98,7 +102,7 @@ private:
   void SetNegative();
   void UnsetNegative();
   void UpdateZeroFlag(uint8_t data);
-  void UpdateOverflowFlag(uint8_t data);  
+  void UpdateOverflowFlag(uint8_t arg1, uint8_t arg2, uint16_t sum);
   void UpdateNegativeFlag(uint8_t data);
 public:
   Cpu(CpuBus& cpubus);

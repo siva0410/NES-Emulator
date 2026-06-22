@@ -1,13 +1,17 @@
 #include "nes.hpp"
 
-int main()
+int main(int argc, char* argv[])
 {
-  Nes nes{};
-  // nes.SetRom("rom/helloworld.nes");
-  // nes.SetRom("rom/sprite/sprite.nes");
-  // nes.SetRom("rom/pad/pad.nes");
-  nes.SetRom("rom/dma/dma.nes");
+  if (argc < 2) {
+    std::cerr << "usage: nes <romfile path>\n";
+    return 1;
+  }
   
+  std::string romPath{argv[1]};
+  
+  Nes nes{};
+  
+  nes.SetRom(romPath);  
   nes.Start();
   
   return 0;
