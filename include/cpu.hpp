@@ -72,6 +72,7 @@ struct Register {
 class Cpu {
 private:
   uint8_t cycles_{};
+  bool nmiRequest_{};
   CpuBus& cpubus_;
   Register regs_{};
   std::array<OpInfo, 256> optable_{};
@@ -106,6 +107,9 @@ private:
   void UpdateNegativeFlag(uint8_t data);
 public:
   Cpu(CpuBus& cpubus);
+  void Nmi();
+  void RequestNmi();
   void Reset();
+  void Irq();
   void Clock();
 };

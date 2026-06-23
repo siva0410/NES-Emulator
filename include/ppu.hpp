@@ -38,6 +38,7 @@ private:
   Ram& palletram_;
   uint32_t cycles_{};
   uint32_t lines_{};
+  bool nmi_{};
   PpuInternalRegister internalRegs_{};
   Ram oam_{0x100};
   std::array<RGB,64> pallet_{
@@ -81,6 +82,7 @@ public:
   PpuRegister regs{};
   Ppu(PpuBus& ppubus, Ram& palletram, Display& display);
   void Clock();
+  bool CheckNmi();
   void WritePpuAddr(uint8_t data);
   uint8_t ReadPpuData();
   void WritePpuData(uint8_t data);

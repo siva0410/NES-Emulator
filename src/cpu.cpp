@@ -10,9 +10,31 @@ Cpu::Cpu(CpuBus& cpubus)
   MakeOpTable();
 }
 
+void Cpu::Nmi()
+{
+  Push16(regs_.pc);
+  Push(regs_.p);
+  regs_.pc = cpubus_.Read(0xFFFA) | (cpubus_.Read(0XFFFB)<<8);
+  SetIRQ();
+}
+
+void Cpu::RequestNmi()
+{
+  nmiRequest_ = true;
+}
+
 void Cpu::Reset()
 {
   regs_.pc = cpubus_.Read(0xFFFC) | (cpubus_.Read(0XFFFD)<<8);
+  SetIRQ();
+}
+
+void Cpu::Irq()
+{
+  if(IRQ()) return;
+  Push16(regs_.pc);
+  Push(regs_.p);
+  regs_.pc = cpubus_.Read(0xFFFE) | (cpubus_.Read(0XFFFF)<<8);
   SetIRQ();
 }
 
@@ -24,8 +46,8 @@ void Cpu::Push(uint8_t value)
 
 void Cpu::Push16(uint16_t value)
 {
-  uint8_t lo = regs_.pc & 0xFF;
-  uint8_t hi = regs_.pc>>8 & 0xFF;
+  uint8_t lo = value & 0xFF;
+  uint8_t hi = value>>8 & 0xFF;
   Push(hi);
   Push(lo);
 }
@@ -42,11 +64,18 @@ uint16_t Cpu::Pull16()
   uint8_t hi = Pull();
   return lo | hi<<8;
 }
+
 void Cpu::Clock()
 {
   if(cycles_ > 0) {
     cycles_--;
     return;
+  }
+
+  // NMI
+  if(nmiRequest_) {
+    nmiRequest_ = false;
+    Nmi();
   }
     
   uint8_t idx{cpubus_.Read(regs_.pc++)};
@@ -58,8 +87,6 @@ void Cpu::Clock()
 
   uint16_t operand{};
   uint16_t addr{};
-  uint8_t arg1{};
-  uint8_t arg2{};
   switch(optable_.at(idx).mode) {
   case Imp:
     break;
@@ -123,7 +150,9 @@ void Cpu::Clock()
   }
 
   std::cout << static_cast<unsigned int>(operand) << std::endl;
-  
+
+  uint8_t arg1{};
+  uint8_t arg2{};
   uint8_t res{};
   uint16_t res16{};
   switch(optable_.at(idx).opcode) {
@@ -239,15 +268,14 @@ void Cpu::Clock()
     
   case ASL:
     if(optable_.at(idx).mode == Acc) {
-      if(regs_.a>>7 & 0b1) SetCarry();
-      else UnsetCarry();
-      res = regs_.a << 1;
+      arg1 = regs_.a;
     }
     else {
-      if(cpubus_.Read(operand)>>7 & 0b1) SetCarry();
-      else UnsetCarry();
-      res = cpubus_.Read(operand) << 1;
+      arg1 = cpubus_.Read(operand);
     }
+    res = arg1 << 1;
+    if(arg1>>7 & 0b1) SetCarry();
+    else UnsetCarry();
     UpdateZeroFlag(res);
     UpdateNegativeFlag(res);
     break;
@@ -368,29 +396,96 @@ void Cpu::Clock()
     
   case LSR:
     if(optable_.at(idx).mode == Acc) {
-      if(regs_.a & 0b1) SetCarry();
-      else UnsetCarry();
-      res = regs_.a >> 1;
+      arg1 = regs_.a;
     }
     else {
-      if(cpubus_.Read(operand) & 0b1) SetCarry();
-      else UnsetCarry();
-      res = cpubus_.Read(operand) >> 1;
+      arg1 = cpubus_.Read(operand);
     }
+    res = arg1 >> 1;
+    if(arg1 & 0b1) SetCarry();
+    else UnsetCarry();
     UpdateZeroFlag(res);
     UpdateNegativeFlag(res);
     break;
     
   case ORA:
+    if(optable_.at(idx).mode == Imm) {
+      regs_.a = regs_.a | operand;
+    }
+    else {
+      regs_.a = regs_.a | cpubus_.Read(operand);
+    }
+    UpdateZeroFlag(regs_.a);
+    UpdateNegativeFlag(regs_.a);
+    break;
+    
   case ROL:
+    if(optable_.at(idx).mode == Acc) {
+      arg1 = regs_.a;
+    }
+    else {
+      arg1 = cpubus_.Read(operand);
+    }
+    if(arg1>>7 & 0b1) SetCarry();
+    else UnsetCarry();
+    res = arg1 << 1;
+    res = res | Carry();
+    UpdateZeroFlag(res);
+    UpdateNegativeFlag(res);
+    break;
+    
   case ROR:
+    if(optable_.at(idx).mode == Acc) {
+      arg1 = regs_.a;
+    }
+    else {
+      arg1 = cpubus_.Read(operand);
+    }
+    if(arg1 & 0b1) SetCarry();
+    else UnsetCarry();
+    res = arg1 >> 1;
+    res = res | (Carry()<<7);
+    UpdateZeroFlag(res);
+    UpdateNegativeFlag(res);
+    break;
+    
   case SBC:
+    if(optable_.at(idx).mode == Imm) {
+      arg1 = regs_.a;
+      arg2 = operand;
+    }
+    else {
+      arg1 = regs_.a;
+      arg2 = cpubus_.Read(operand);
+    }
+    res16 = arg1 + arg2 + Carry();
+    regs_.a = res16 & 0xFF;
+    
+    if(res16>>8 & 0b1) SetCarry();
+    else UnsetCarry();
+    UpdateZeroFlag(regs_.a);
+    UpdateOverflowFlag(arg1, arg2, res16);
+    UpdateNegativeFlag(regs_.a);
     break;
     
   case PHA:
+    Push(regs_.a);
+    break;
+    
   case PHP:
+    Push(regs_.p | 0b00110000);
+    break;
+    
   case PLA:
+    regs_.a = Pull();
+    UpdateNegativeFlag(regs_.a);
+    UpdateZeroFlag(regs_.a);
+    break;
+    
   case PLP:
+    regs_.p = Pull();
+    regs_.p = regs_.p | 0b00100000;
+    regs_.p = regs_.p & 0b11101111;
     break;
     
   case JMP:
@@ -407,6 +502,10 @@ void Cpu::Clock()
     break;
     
   case RTI:
+    regs_.p = Pull();
+    regs_.p = regs_.p | 0b00100000;
+    regs_.p = regs_.p & 0b11101111;
+    regs_.pc = Pull16();
     break;
     
   case BCC:

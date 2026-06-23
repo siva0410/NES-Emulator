@@ -107,6 +107,7 @@ void Ppu::Clock()
   
   if (lines_ <= 240 and lines_%8 == 0) {
     SetVblank();
+    nmi_ = true;
     for(uint32_t x=0; x<32; x++) {
       uint32_t y = lines_/8-1;
       Point p{x,y};
@@ -115,11 +116,20 @@ void Ppu::Clock()
   }
   if (lines_ >= 262) {
     DrawSprPatterns();
-    oam_.Dump();
+    // oam_.Dump();
     display_.Update();
     lines_ = 0;
     ClearVblank();
   }
+}
+
+bool Ppu::CheckNmi()
+{
+  if(nmi_) {
+    nmi_ = false;
+    return true;
+  }
+  return false;
 }
 
 void Ppu::WritePpuAddr(uint8_t data)

@@ -20,20 +20,10 @@ uint8_t CpuBus::Read(uint16_t addr) const
   else if(addr >= 0x2000 && addr <= 0x3FFF) {
     uint8_t idx = addr&0x0007;
     switch(idx) {
-    // case 0x0:
-    //   return ppu_.regs.ppuCtrl;
-    // case 0x1:
-    //   return ppu_.regs.ppuMask;
-    case 0x2:      
+    case 0x2:
       return ppu_.ReadPpuStatus();
-    // case 0x3:
-    //   return ppu_.regs.oamAddr;
     case 0x4:
       return ppu_.ReadOamData();
-    // case 0x5:
-    //   return ppu_.regs.ppuScroll;
-    // case 0x6:
-    //   return ppu_.regs.ppuAddr;
     case 0x7:
       return ppu_.ReadPpuData();
     default:
@@ -79,9 +69,6 @@ void CpuBus::Write(uint16_t addr, uint8_t data)
     case 0x1:
       ppu_.regs.ppuMask = data;
       break;
-    // case 0x2:
-    //   ppu_.regs.ppuStatus = data;
-    //   break;
     case 0x3:
       ppu_.WriteOamAddr(data);
       break;

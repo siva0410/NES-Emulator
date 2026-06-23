@@ -68,10 +68,16 @@ void Nes::Start()
       }
       KeyboardHandler(event);
     }
+
+    uint8_t nmiEnable = ppu_.regs.ppuCtrl>>7 & 0b1;
+    
     cpu_.Clock();
-    ppu_.Clock();
-    ppu_.Clock();
-    ppu_.Clock();
+    for(uint8_t i=0; i<3; i++) {
+      ppu_.Clock();
+      if(nmiEnable and ppu_.CheckNmi()) {
+	cpu_.RequestNmi();
+      }
+    }
   }
 
   display_.Close();
