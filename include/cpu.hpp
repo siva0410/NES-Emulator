@@ -103,7 +103,8 @@ private:
   void SetNegative();
   void UnsetNegative();
   void UpdateZeroFlag(uint8_t data);
-  void UpdateOverflowFlag(uint8_t arg1, uint8_t arg2, uint16_t sum);
+  void UpdateAdcOverflowFlag(uint8_t arg1, uint8_t arg2, uint16_t sum);
+  void UpdateSbcOverflowFlag(uint8_t arg1, uint8_t arg2, uint16_t sum);
   void UpdateNegativeFlag(uint8_t data);
 public:
   Cpu(CpuBus& cpubus);

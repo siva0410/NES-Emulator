@@ -111,12 +111,27 @@ void Cpu::UpdateZeroFlag(uint8_t data)
   else UnsetZero();
 }
 
-void Cpu::UpdateOverflowFlag(uint8_t arg1, uint8_t arg2, uint16_t sum)
+void Cpu::UpdateAdcOverflowFlag(uint8_t arg1, uint8_t arg2, uint16_t sum)
 {
   uint8_t arg1sign = arg1>>7 & 0b1;
   uint8_t arg2sign = arg2>>7 & 0b1;
   uint8_t sumsign = sum>>7 & 0b1;
   if(arg1sign == arg2sign) {
+    if(sumsign != arg1sign) {
+      SetOverflow();
+    }
+  }
+  else {
+    UnsetOverflow();
+  }
+}
+
+void Cpu::UpdateSbcOverflowFlag(uint8_t arg1, uint8_t arg2, uint16_t sum)
+{
+  uint8_t arg1sign = arg1>>7 & 0b1;
+  uint8_t arg2sign = arg2>>7 & 0b1;
+  uint8_t sumsign = sum>>7 & 0b1;
+  if(arg1sign != arg2sign) {
     if(sumsign != arg1sign) {
       SetOverflow();
     }

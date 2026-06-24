@@ -251,7 +251,7 @@ void Cpu::Clock()
     if(res16>>8 & 0b1) SetCarry();
     else UnsetCarry();
     UpdateZeroFlag(regs_.a);
-    UpdateOverflowFlag(arg1, arg2, res16);
+    UpdateAdcOverflowFlag(arg1, arg2, res16);
     UpdateNegativeFlag(regs_.a);
     break;
     
@@ -458,13 +458,13 @@ void Cpu::Clock()
       arg1 = regs_.a;
       arg2 = cpubus_.Read(operand);
     }
-    res16 = arg1 + arg2 + Carry();
+    res16 = arg1 - arg2 - (1-Carry());
     regs_.a = res16 & 0xFF;
     
     if(res16>>8 & 0b1) SetCarry();
     else UnsetCarry();
     UpdateZeroFlag(regs_.a);
-    UpdateOverflowFlag(arg1, arg2, res16);
+    UpdateSbcOverflowFlag(arg1, arg2, res16);
     UpdateNegativeFlag(regs_.a);
     break;
     
