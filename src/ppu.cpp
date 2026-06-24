@@ -9,10 +9,11 @@ Ppu::Ppu(PpuBus& ppubus, Ram& palletram, Display& display)
   }
 }
 
-uint8_t Ppu::GetBGPallet(Point p)
+uint8_t Ppu::GetBGPallet()
 {
-  uint8_t palletByte = ppubus_.Read(0x23C0+p.x/4+p.y/4*8);
-  uint8_t palletIdx = (p.x/2)&0b01 | (((p.y/2)<<1)&0b10)<<1;
+  uint8_t palletByte = ppubus_.Read(0x23C0+p_.x/4+p_.y/4*8);
+  uint8_t palletIdx = (p_.x/2)&0b1 | ((p_.y/2)&0b1)<<1;
+  palletIdx = palletIdx<<1;
   uint8_t pallet = (palletByte >> palletIdx) & 0b11;
   return pallet;
 }
@@ -79,17 +80,17 @@ void Ppu::DrawSprPatterns()
   }
 }
 
-void Ppu::DrawBGPattern(Point p)
+void Ppu::DrawBGPattern()
 {
-  uint8_t chrIdx = ppubus_.Read(0x2000+p.x+32*p.y);
+  uint8_t chrIdx = ppubus_.Read(0x2000+p_.x+32*p_.y);
   uint16_t patternAddr = BackgroundPTAddr() + 0x10*chrIdx;
   for(uint32_t y=0; y<8; y++) {
     uint8_t patternLow = ppubus_.Read(patternAddr+y);
-    uint8_t patternHi = ppubus_.Read(patternAddr+y+0x8);
+    uint8_t patternHi = ppubus_.Read(patternAddr+0x8+y);
     for(uint32_t x=0; x<8; x++) {
-      Point patternPoint{p.x*8+x, p.y*8+y};
-      uint8_t patternIdx = patternLow>>(7-x) & 0x1 | (patternHi>>(7-x) & 0x1) << 1;
-      display_.Write(patternPoint, GetBGColor(GetBGPallet(p), patternIdx));
+      Point patternPoint{p_.x*8+x, p_.y*8+y};
+      uint8_t patternIdx = (patternLow>>(7-x) & 0b1) | ((patternHi>>(7-x) & 0b1) << 1);
+      display_.Write(patternPoint, GetBGColor(GetBGPallet(), patternIdx));
     }
   }
 }
@@ -97,29 +98,32 @@ void Ppu::DrawBGPattern(Point p)
 void Ppu::Clock()
 {
   cycles_++;
-   
-  if (cycles_ <= 340) {
-    return;
+  
+  if (cycles_ <= 256 and cycles_%8 == 0) {
+    p_.x = cycles_/8-1;
   }
   
-  cycles_ = 0;
-  lines_++;
+  if (cycles_ > 340) {
+    lines_++;
+    cycles_ = 0;
+  }
   
   if (lines_ <= 240 and lines_%8 == 0) {
+    p_.y = lines_/8-1;
+    DrawBGPattern();
+  }
+
+  if (lines_ == 241 and cycles_ == 1) {
     SetVblank();
     nmi_ = true;
-    for(uint32_t x=0; x<32; x++) {
-      uint32_t y = lines_/8-1;
-      Point p{x,y};
-      DrawBGPattern(p);
-    }
   }
-  if (lines_ >= 262) {
-    DrawSprPatterns();
-    // oam_.Dump();
-    display_.Update();
+  
+  if (lines_ > 261) {
     lines_ = 0;
+    DrawSprPatterns();
     ClearVblank();
+    nmi_ = false;
+    display_.Update();
   }
 }
 

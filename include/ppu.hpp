@@ -39,6 +39,7 @@ private:
   uint32_t cycles_{};
   uint32_t lines_{};
   bool nmi_{};
+  Point p_{};
   PpuInternalRegister internalRegs_{};
   Ram oam_{0x100};
   std::array<RGB,64> pallet_{
@@ -61,10 +62,10 @@ private:
       {0x00,0xFC,0xFC}, {0xF8,0xD8,0xF8}, {0x00,0x00,0x00}, {0x00,0x00,0x00}
     }
   };
-  void DrawBGPattern(Point p);
+  void DrawBGPattern();
   void DrawSprPattern(Point p, uint8_t attr, uint16_t chrIdx);
   void DrawSprPatterns();
-  uint8_t GetBGPallet(Point p);
+  uint8_t GetBGPallet();
   RGB GetSprColor(uint8_t palletIdx, uint8_t patternIdx);
   RGB GetBGColor(uint8_t palletIdx, uint8_t patternIdx);
   uint16_t BaseNTAddr();
