@@ -76,7 +76,7 @@ void CpuBus::Write(uint16_t addr, uint8_t data)
       ppu_.WriteOamData(data);
       break;
     case 0x5:
-      ppu_.regs.ppuScroll = data;
+      ppu_.WritePpuScroll(data);
       break;
     case 0x6:
       ppu_.WritePpuAddr(data);

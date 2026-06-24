@@ -27,7 +27,14 @@ RGB Ppu::GetSprColor(uint8_t palletIdx, uint8_t patternIdx)
 
 RGB Ppu::GetBGColor(uint8_t palletIdx, uint8_t patternIdx)
 {
-  uint8_t colorIdx = ppubus_.Read(0x3F00+palletIdx*4+patternIdx);
+  uint16_t addr{};
+  if (patternIdx == 0) {
+    addr = 0x3F00;
+  }
+  else {
+    addr = 0x3F00+palletIdx*4+patternIdx;
+  }
+  uint8_t colorIdx = ppubus_.Read(addr);
   RGB color = pallet_.at(colorIdx);
   return color;
 }
@@ -58,6 +65,9 @@ void Ppu::DrawSprPattern(Point p, uint8_t attr, uint16_t chrIdx)
 	wx = x;
       }
       uint8_t patternIdx = patternLow>>(7-x) & 0x1 | (patternHi>>(7-x) & 0x1) << 1;
+      if (patternIdx == 0) {
+	continue;
+      }
       Point patternPoint{p.x+wx, p.y+wy};
       display_.Write(patternPoint, GetSprColor(palletIdx, patternIdx));
     }
@@ -134,6 +144,18 @@ bool Ppu::CheckNmi()
     return true;
   }
   return false;
+}
+
+void Ppu::WritePpuScroll(uint8_t data)
+{
+  regs.ppuScroll = data;
+  if(!internalRegs_.w) {
+    internalRegs_.v = regs.ppuScroll;
+    internalRegs_.w = 1;
+  } else {
+    internalRegs_.v |= regs.ppuScroll;
+    internalRegs_.w = 0;
+  }
 }
 
 void Ppu::WritePpuAddr(uint8_t data)
