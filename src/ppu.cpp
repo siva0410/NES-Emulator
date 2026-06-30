@@ -132,12 +132,11 @@ void Ppu::Clock()
     lines_ = 0;
     DrawSprPatterns();
     ClearVblank();
-    nmi_ = false;
     display_.Update();
   }
 }
 
-bool Ppu::CheckNmi()
+bool Ppu::ConsumeNmi()
 {
   if(nmi_) {
     nmi_ = false;
@@ -263,7 +262,7 @@ uint8_t Ppu::SpriteSize()
   }
 }
 
-bool Ppu::VblankNMI() {
+bool Ppu::IsNmiEnable() {
   return regs.ppuCtrl>>7 & 0b1;
 }
 

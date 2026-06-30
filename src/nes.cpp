@@ -68,13 +68,11 @@ void Nes::Start()
       }
       KeyboardHandler(event);
     }
-
-    uint8_t nmiEnable = ppu_.regs.ppuCtrl>>7 & 0b1;
     
     cpu_.Clock();
     for(uint8_t i=0; i<3; i++) {
       ppu_.Clock();
-      if(nmiEnable and ppu_.CheckNmi()) {
+      if(ppu_.IsNmiEnable() and ppu_.ConsumeNmi()) {
 	cpu_.RequestNmi();
       }
     }
@@ -84,6 +82,10 @@ void Nes::Start()
 
   std::cout << "-----ROM DUMP-----" << std:: endl;
   rom_->Dump();
+  std::cout << std::endl;
+
+  std::cout << "-----Cartridge RAM DUMP-----" << std:: endl;
+  rom_->RamDump();
   std::cout << std::endl;
   
   std::cout << "-----WRAM DUMP-----" << std:: endl;

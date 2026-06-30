@@ -27,7 +27,8 @@ uint8_t CpuBus::Read(uint16_t addr) const
     case 0x7:
       return ppu_.ReadPpuData();
     default:
-      throw std::runtime_error("Out of ppu register.");
+      return 0x00;
+      // throw std::runtime_error("READ: Out of ppu register.");
     }
   }
   /* APU or I/O registers */
@@ -41,15 +42,24 @@ uint8_t CpuBus::Read(uint16_t addr) const
     case 0x17:
       return controller2_.Read();
     default:
-      throw std::runtime_error("Out of apu or i/o register.");
+      return 0x00;
+      // throw std::runtime_error("READ: Out of apu or i/o register.");
     }
   }
   /* PRG_ROM */
+  else if(addr >= 0x6000 && addr <= 0x7FFF) {
+    return rom_->ReadRam(addr&0x1FFF);
+  }
   else if(addr >= 0x8000 && addr <= 0xFFFF) {
-    return rom_->ReadPrgRom(addr&0x7FFF);
+    if (rom_->prgromSize == 0x4000) {
+      return rom_->ReadPrgRom(addr&0x3FFF);
+    }
+    else {
+      return rom_->ReadPrgRom(addr&0x7FFF);
+    }
   }
   else {
-    throw std::runtime_error("Out of PRG_ROM.");
+    throw std::runtime_error("READ: Out of CPUBUS.");
   }
 }
 
@@ -85,18 +95,15 @@ void CpuBus::Write(uint16_t addr, uint8_t data)
       ppu_.WritePpuData(data);
       break;
     default:
-      throw std::runtime_error("Out of ppu register.");
+      throw std::runtime_error("WRITE: Out of ppu register.");
     }
   }
   /* APU or I/O registers */
   else if(addr >= 0x4000 && addr <= 0x401F) {
     uint8_t idx = addr&0x001F;
-    uint16_t dmaAddr = data << 8;
     switch(idx) {
     case 0x14:
-      for (uint32_t oamAddr=0; oamAddr<0x100; oamAddr++) {
-	ppu_.WriteOam(oamAddr, wram_.Read(dmaAddr+oamAddr));
-      }
+      Dma(data);
       break;
     case 0x16:
       controller1_.Write(data);
@@ -105,10 +112,31 @@ void CpuBus::Write(uint16_t addr, uint8_t data)
       controller2_.Write(data);
       break;
     default:
-      throw std::runtime_error("Out of apu or i/o registers.");
+      throw std::runtime_error("WRITE: Out of apu or i/o registers.");
     }
   }
-  else {
-    throw std::runtime_error("Out of WRAM.");
+  else if(addr >= 0x6000 && addr <= 0x7FFF) {
+    rom_->WriteRam(addr&0x1FFF, data);
   }
+  else {
+    throw std::runtime_error("WRITE: Out of CPUBUS.");
+  }
+}
+
+void CpuBus::Dma(uint8_t data)
+{
+  uint16_t dmaAddr = data << 8;
+  for (uint32_t oamAddr=0; oamAddr<0x100; oamAddr++) {
+    ppu_.WriteOam(oamAddr, wram_.Read(dmaAddr+oamAddr));
+  }
+  dma_ = true;
+}
+
+bool CpuBus::ConsumeDma()
+{
+  if(dma_) {
+    dma_ = false;
+    return true;
+  }
+  return false;
 }

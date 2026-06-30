@@ -75,7 +75,6 @@ private:
   uint16_t SpritePTAddr();
   uint16_t BackgroundPTAddr();
   uint8_t SpriteSize();
-  bool VblankNMI();
   bool SpriteOverflow();
   bool Sprite0Hit();
   bool Vblank();
@@ -85,7 +84,8 @@ public:
   PpuRegister regs{};
   Ppu(PpuBus& ppubus, Ram& palletram, Display& display);
   void Clock();
-  bool CheckNmi();
+  bool ConsumeNmi();
+  bool IsNmiEnable();
   void WritePpuAddr(uint8_t data);
   uint8_t ReadPpuData();
   void WritePpuData(uint8_t data);

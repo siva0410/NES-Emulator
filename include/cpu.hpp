@@ -71,7 +71,7 @@ struct Register {
 
 class Cpu {
 private:
-  uint8_t cycles_{};
+  uint32_t cycles_{};
   bool nmiRequest_{};
   CpuBus& cpubus_;
   Register regs_{};
