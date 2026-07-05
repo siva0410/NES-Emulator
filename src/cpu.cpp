@@ -75,8 +75,9 @@ void Cpu::Clock()
 
   if(cpubus_.ConsumeDma()) {
     cycles_ += 513;
+    return;
   }
-  
+
   // NMI
   if(nmiRequest_) {
     nmiRequest_ = false;
@@ -301,12 +302,13 @@ void Cpu::Clock()
     
   case CMP:
     if(optable_.at(idx).mode == Imm) {
-      res = regs_.a - operand;
+      arg1 = operand;
     }
     else {
-      res = regs_.a - cpubus_.Read(operand);
+      arg1 = cpubus_.Read(operand);
     }
-    if(res >= 0){
+    res = regs_.a - arg1;
+    if(regs_.a >= arg1){
       SetCarry();
     }
     else {
@@ -318,12 +320,13 @@ void Cpu::Clock()
     
   case CPX:
     if(optable_.at(idx).mode == Imm) {
-      res = regs_.x - operand;
+      arg1 = operand;
     }
     else {
-      res = regs_.x - cpubus_.Read(operand);
+      arg1 = cpubus_.Read(operand);
     }
-    if(res >= 0){
+    res = regs_.x - arg1;
+    if(regs_.x >= arg1){
       SetCarry();
     }
     else {
@@ -335,12 +338,13 @@ void Cpu::Clock()
     
   case CPY:
     if(optable_.at(idx).mode == Imm) {
-      res = regs_.y - operand;
+      arg1 = operand;
     }
     else {
-      res = regs_.y - cpubus_.Read(operand);
+      arg1 = cpubus_.Read(operand);
     }
-    if(res >= 0){
+    res = regs_.y - arg1;
+    if(regs_.y >= arg1){
       SetCarry();
     }
     else {

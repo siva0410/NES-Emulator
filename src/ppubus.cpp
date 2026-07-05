@@ -16,21 +16,44 @@ uint8_t PpuBus::Read(uint16_t addr) const
   if(addr >= 0x0000 && addr <= 0x1FFF) {
     return rom_->ReadChrRom(addr);
   }
-  /* VRAM NT0 */
-  else if(addr >= 0x2000 && addr <= 0x23FF) {
-    return vram_.Read(addr&0x07FF);
-  }
-  /* VRAM NT1 */
-  else if(addr >= 0x2400 && addr <= 0x27FF) {
-    return vram_.Read(addr&0x07FF);
-  }
-  /* VRAM NT2 Vertical Mirror */
-  else if(addr >= 0x2800 && addr <= 0x2BFF) {
-    return vram_.Read(addr&0x07FF);
-  }
-  /* VRAM NT3 Vertical Mirror */
-  else if(addr >= 0x2C00 && addr <= 0x2FFF) {
-    return vram_.Read(addr&0x07FF);
+  else if (addr >= 0x2000 && addr <= 0x2FFF) {
+    addr = addr & 0x0FFF;
+    if (rom_->IsVerticalMirror()) {
+      /* VRAM NT0 */
+      if (addr >= 0x000 && addr <= 0x3FF) {
+	return vram_.Read(addr);
+      }
+      /* VRAM NT1 */
+      else if (addr >= 0x400 && addr <= 0x7FF) {
+	return vram_.Read(addr);
+      }
+      /* VRAM NT2 */
+      else if (addr >= 0x800 && addr <= 0xBFF) {
+	return vram_.Read(addr - 0x800);
+      }
+      /* VRAM NT3 */
+      else if (addr >= 0xC00 && addr <= 0xFFF) {
+	return vram_.Read(addr - 0x800);
+      }
+    }
+    else {
+      /* VRAM NT0 */
+      if (addr >= 0x000 && addr <= 0x3FF) {
+	return vram_.Read(addr);
+      }
+      /* VRAM NT1 */
+      else if (addr >= 0x400 && addr <= 0x7FF) {
+	return vram_.Read(addr - 0x400);
+      }
+      /* VRAM NT2 */
+      else if (addr >= 0x800 && addr <= 0xBFF) {
+	return vram_.Read(addr - 0x400);
+      }
+      /* VRAM NT3 */
+      else if (addr >= 0xC00 && addr <= 0xFFF) {
+	return vram_.Read(addr - 0x800);
+      }
+    }
   }
   /* Pallet RAM and Mirros */
   else if(addr >= 0x3F00 && addr <= 0x3FFF) {
@@ -48,24 +71,47 @@ uint8_t PpuBus::Read(uint16_t addr) const
 
 void PpuBus::Write(uint16_t addr, uint8_t data)
 {
-  /* VRAM NT0 */
-  if(addr >= 0x2000 && addr <= 0x23FF) {
-    vram_.Write(addr&0x07FF, data);
-  }
-  /* VRAM NT1 */
-  else if(addr >= 0x2400 && addr <= 0x27FF) {
-    vram_.Write(addr&0x07FF, data);
-  }
-  /* VRAM NT2 Vertical Mirror */
-  else if(addr >= 0x2800 && addr <= 0x2BFF) {
-    vram_.Write(addr&0x07FF, data);
-  }
-  /* VRAM NT3 Vertical Mirror */
-  else if(addr >= 0x2C00 && addr <= 0x2FFF) {
-    vram_.Write(addr&0x07FF, data);
+  if (addr >= 0x2000 && addr <= 0x2FFF) {
+    addr = addr & 0x0FFF;
+    if (rom_->IsVerticalMirror()) {
+      /* VRAM NT0 */
+      if (addr >= 0x000 && addr <= 0x3FF) {
+	vram_.Write(addr, data);
+      }
+      /* VRAM NT1 */
+      else if (addr >= 0x400 && addr <= 0x7FF) {
+	vram_.Write(addr, data);
+      }
+      /* VRAM NT2 */
+      else if (addr >= 0x800 && addr <= 0xBFF) {
+	vram_.Write(addr - 0x800, data);
+      }
+      /* VRAM NT3 */
+      else if (addr >= 0xC00 && addr <= 0xFFF) {
+	vram_.Write(addr - 0x800, data);
+      }
+    }
+    else {
+      /* VRAM NT0 */
+      if (addr >= 0x000 && addr <= 0x3FF) {
+	vram_.Write(addr, data);
+      }
+      /* VRAM NT1 */
+      else if (addr >= 0x400 && addr <= 0x7FF) {
+	vram_.Write(addr - 0x400, data);
+      }
+      /* VRAM NT2 */
+      else if (addr >= 0x800 && addr <= 0xBFF) {
+	vram_.Write(addr- 0x400, data);
+      }
+      /* VRAM NT3 */
+      else if (addr >= 0xC00 && addr <= 0xFFF) {
+	vram_.Write(addr - 0x800, data);
+      }
+    }
   }
   /* Pallet RAM and Mirros */
-  else if(addr >= 0x3F00 && addr <= 0x3FFF) {
+  else if (addr >= 0x3F00 && addr <= 0x3FFF) {
     addr = addr&0x001F;
     if(addr == 0x10) addr = 0x00;
     if(addr == 0x14) addr = 0x04;

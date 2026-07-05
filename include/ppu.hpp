@@ -11,26 +11,6 @@ using std::uint8_t;
 using std::uint16_t;
 using std::uint32_t;
 
-struct PpuRegister {
-  uint8_t ppuCtrl;
-  uint8_t ppuMask;
-  uint8_t ppuStatus;
-  uint8_t oamAddr;
-  uint8_t oamData;
-  uint8_t ppuScroll;
-  uint8_t ppuAddr;
-  uint8_t ppuData;
-  uint8_t oamDma;
-};
-
-struct PpuInternalRegister {
-  uint16_t v;
-  uint16_t t;
-  uint8_t x;
-  uint8_t w;
-  uint8_t oam;
-};
-
 class Ppu {
 private:
   Display& display_;
@@ -39,10 +19,27 @@ private:
   uint32_t cycles_{};
   uint32_t lines_{};
   bool nmi_{};
-  Point p_{};
-  uint32_t scrX_{};
-  uint32_t scrY_{};
-  PpuInternalRegister internalRegs_{};
+  // Point p_{};
+  uint8_t ppuCtrl_{};
+  // uint8_t ppuMask_{};
+  bool showLeftBg_{};
+  bool showLeftSpr_{};
+  bool enableBg_{};
+  bool enableSpr_{};
+  uint8_t ppuStatus_{};
+  Point screen_{};
+  Point scroll_{};
+  Point bg_{};
+  Point coarse_{};
+  Point fine_{};
+  uint8_t ntIdx_{};
+  // uint32_t screenX_{};
+  // uint32_t screenY_{};
+  uint32_t scrollX_{};
+  uint32_t scrollY_{};
+  bool latch_{};
+  uint16_t ppuAddr_{};
+  uint8_t oamAddr_{};
   Ram oam_{0x100};
   std::array<RGB,64> pallet_{
     {
@@ -65,12 +62,13 @@ private:
     }
   };
   void DrawBGPattern();
+  void DrawBGPixel();
   void DrawSprPattern(Point p, uint8_t attr, uint16_t chrIdx);
   void DrawSprPatterns();
   uint8_t GetBGPallet();
   RGB GetSprColor(uint8_t palletIdx, uint8_t patternIdx);
   RGB GetBGColor(uint8_t palletIdx, uint8_t patternIdx);
-  uint16_t BaseNTAddr();
+  Point ScreenPosition();
   uint8_t IncPpuAddrSize();
   uint16_t SpritePTAddr();
   uint16_t BackgroundPTAddr();
@@ -81,11 +79,12 @@ private:
   void SetVblank();
   void ClearVblank();
 public:
-  PpuRegister regs{};
   Ppu(PpuBus& ppubus, Ram& palletram, Display& display);
   void Clock();
   bool ConsumeNmi();
   bool IsNmiEnable();
+  void WritePpuCtrl(uint8_t data);
+  void WritePpuMask(uint8_t data);
   void WritePpuAddr(uint8_t data);
   uint8_t ReadPpuData();
   void WritePpuData(uint8_t data);

@@ -3,7 +3,7 @@
 void Display::Write(Point p, RGB color)
 {
   // if(p.x >= 0xFA) return;
-  if(p.y >= 0xF0) return;
+  // if(p.y >= 0xF0) return;
   buffer_.at((p.x+p.y*256)*3+0) = color.r;
   buffer_.at((p.x+p.y*256)*3+1) = color.g;
   buffer_.at((p.x+p.y*256)*3+2) = color.b;

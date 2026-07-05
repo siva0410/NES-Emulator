@@ -35,8 +35,6 @@ uint8_t CpuBus::Read(uint16_t addr) const
   else if(addr >= 0x4000 && addr <= 0x401F) {
     uint8_t idx = addr&0x001F;
     switch(idx) {
-    case 0x14:
-      return ppu_.regs.oamDma;
     case 0x16:
       return controller1_.Read();
     case 0x17:
@@ -74,10 +72,10 @@ void CpuBus::Write(uint16_t addr, uint8_t data)
     uint8_t idx = addr&0x0007;
     switch(idx) {
     case 0x0:
-      ppu_.regs.ppuCtrl = data;
+      ppu_.WritePpuCtrl(data);
       break;
     case 0x1:
-      ppu_.regs.ppuMask = data;
+      ppu_.WritePpuMask(data);
       break;
     case 0x3:
       ppu_.WriteOamAddr(data);
@@ -112,6 +110,7 @@ void CpuBus::Write(uint16_t addr, uint8_t data)
       controller2_.Write(data);
       break;
     default:
+      break;
       throw std::runtime_error("WRITE: Out of apu or i/o registers.");
     }
   }
