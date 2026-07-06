@@ -64,7 +64,6 @@ struct Register {
   uint8_t x;
   uint8_t y;
   uint8_t s = 0xFD;
-  uint8_t p;
   uint16_t pc;
   uint8_t flag = 0b00100000;
 };

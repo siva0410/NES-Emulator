@@ -13,7 +13,7 @@ Cpu::Cpu(CpuBus& cpubus)
 void Cpu::Nmi()
 {
   Push16(regs_.pc);
-  Push(regs_.p);
+  Push(regs_.flag);
   regs_.pc = cpubus_.Read(0xFFFA) | (cpubus_.Read(0XFFFB)<<8);
   SetIRQ();
   cycles_ += 7;
@@ -34,7 +34,7 @@ void Cpu::Irq()
 {
   if(IRQ()) return;
   Push16(regs_.pc);
-  Push(regs_.p);
+  Push(regs_.flag);
   regs_.pc = cpubus_.Read(0xFFFE) | (cpubus_.Read(0XFFFF)<<8);
   SetIRQ();
 }
@@ -482,7 +482,7 @@ void Cpu::Clock()
     break;
     
   case PHP:
-    Push(regs_.p | 0b00110000);
+    Push(regs_.flag | 0b00110000);
     break;
     
   case PLA:
@@ -492,9 +492,9 @@ void Cpu::Clock()
     break;
     
   case PLP:
-    regs_.p = Pull();
-    regs_.p = regs_.p | 0b00100000;
-    regs_.p = regs_.p & 0b11101111;
+    regs_.flag = Pull();
+    regs_.flag = regs_.flag | 0b00100000;
+    regs_.flag = regs_.flag & 0b11101111;
     break;
     
   case JMP:
@@ -511,9 +511,9 @@ void Cpu::Clock()
     break;
     
   case RTI:
-    regs_.p = Pull();
-    regs_.p = regs_.p | 0b00100000;
-    regs_.p = regs_.p & 0b11101111;
+    regs_.flag = Pull();
+    regs_.flag = regs_.flag | 0b00100000;
+    regs_.flag = regs_.flag & 0b11101111;
     regs_.pc = Pull16();
     break;
     
@@ -668,7 +668,7 @@ void Cpu::MakeOpTable()
   optable_[0x1E] = { "ASL", Opcode::ASL, AddrMode::AbsX, 3, 7};
 
   optable_[0x24] = { "BIT", Opcode::BIT, AddrMode::Zp, 2, 3};
-  optable_[0x2C] = { "BIT", Opcode::BIT, AddrMode::Zp, 3, 4};
+  optable_[0x2C] = { "BIT", Opcode::BIT, AddrMode::Abs, 3, 4};
 
   optable_[0xC9] = { "CMP", Opcode::CMP, AddrMode::Imm, 2, 2};
   optable_[0xC5] = { "CMP", Opcode::CMP, AddrMode::Zp, 2, 3};
