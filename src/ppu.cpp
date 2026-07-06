@@ -49,6 +49,7 @@ void Ppu::DrawBGPixel()
   uint8_t patternHi = ppubus_.Read(patternAddr+0x8+fine_.y);
   uint8_t patternIdx = (patternLow>>(7-fine_.x) & 0b1) | ((patternHi>>(7-fine_.x) & 0b1) << 1);
   if (bg_.y < 240) {
+    CheckSprite0Hit(patternIdx);
     display_.Write(screen_, GetBGColor(GetBGPallet(), patternIdx));
   }
 }
@@ -60,36 +61,65 @@ RGB Ppu::GetSprColor(uint8_t palletIdx, uint8_t patternIdx)
   return color;
 }
 
-void Ppu::DrawSprPattern(Point p, uint8_t attr, uint16_t chrIdx)
+uint8_t Ppu::GetSprPattern(Point screen, Point spr, uint8_t attr, uint16_t chrIdx)
+{
+  bool flipHorizon = attr>>6 & 0b1;
+  bool flipVertical = attr>>7 & 0b1;
+  uint16_t patternAddr = SpritePTAddr() + 0x10*chrIdx;
+  Point pattern{};
+  Point fine{};
+  
+  fine.x = screen.x - spr.x;
+  fine.y = screen.y - spr.y;
+  
+  if(flipVertical){
+    pattern.y = 7-fine.y;
+  }
+  else {
+    pattern.y = fine.y;
+  }
+  
+  uint8_t patternLow = ppubus_.Read(patternAddr+fine.y);
+  uint8_t patternHi = ppubus_.Read(patternAddr+fine.y+0x8);
+
+  if(flipHorizon){
+    pattern.x = 7-fine.x;
+  }
+  else {
+    pattern.x = fine.x;
+  }
+  uint8_t patternIdx = patternLow>>(7-fine.x) & 0x1 | (patternHi>>(7-fine.x) & 0x1) << 1;
+
+  return patternIdx;
+}
+
+void Ppu::DrawSprPattern(Point spr, uint8_t attr, uint16_t chrIdx)
 {
   uint8_t palletIdx = attr & 0b11;
   bool flipHorizon = attr>>6 & 0b1;
   bool flipVertical = attr>>7 & 0b1;
-  uint16_t patternAddr = SpritePTAddr() + 0x10*chrIdx;
-  uint32_t wx{};
-  uint32_t wy{};
+  Point pattern{};
+  Point fine{};
   
-  for(uint32_t y=0; y<8; y++) {
+  for(fine.y=0; fine.y<8; fine.y++) {
     if(flipVertical){
-       wy = 7-y;
+       pattern.y = 7-fine.y;
     }
     else {
-      wy = y;
+      pattern.y = fine.y;
     }
-    uint8_t patternLow = ppubus_.Read(patternAddr+y);
-    uint8_t patternHi = ppubus_.Read(patternAddr+y+0x8);
-    for(uint32_t x=0; x<8; x++) {
+    for(fine.x=0; fine.x<8; fine.x++) {
       if(flipHorizon){
-	wx = 7-x;
+	pattern.x = 7-fine.x;
       }
       else {
-	wx = x;
+	pattern.x = fine.x;
       }
-      uint8_t patternIdx = patternLow>>(7-x) & 0x1 | (patternHi>>(7-x) & 0x1) << 1;
+      uint8_t patternIdx = GetSprPattern(Point{spr.x+fine.x,spr.y+fine.y}, spr, attr, chrIdx);
       if (patternIdx == 0) {
 	continue;
       }
-      Point patternPoint{p.x+wx, p.y+wy};
+      Point patternPoint{spr.x+pattern.x, spr.y+pattern.y};
       if (patternPoint.x < 0 || patternPoint.x >= 256) {
 	continue;
       }
@@ -105,17 +135,44 @@ void Ppu::DrawSprPatterns()
 {
   uint8_t index{};
   uint8_t attr{};
-  Point p{};
+  Point spr{};
   for(uint32_t i=0; i<64; i++) {
-    p.y = oam_.Read(i*4);
+    spr.y = oam_.Read(i*4);
     index = oam_.Read(i*4+1);
     attr = oam_.Read(i*4+2);
-    p.x = oam_.Read(i*4+3);
+    spr.x = oam_.Read(i*4+3);
     if((attr>>5 & 0b1) == 0){
-      if (showLeftSpr_ || p.x >= 8) {
-	DrawSprPattern(p, attr, index);
+      if (showLeftSpr_ || spr.x >= 8) {
+	DrawSprPattern(spr, attr, index);
       }
     }
+  }
+}
+
+void Ppu::CheckSprite0Hit(uint8_t bgPatternIdx)
+{
+  if(Sprite0Hit()) return;
+  if(!enableBg_) return;
+  if(!enableSpr_) return;
+  
+  Point spr{};
+  uint8_t index{};
+  uint8_t attr{};
+  spr.y = oam_.Read(0);
+  index = oam_.Read(1);
+  attr = oam_.Read(2);
+  spr.x = oam_.Read(3);
+  
+  if(spr.x < screen_.x || screen_.x >= spr.x + 8){
+    return;
+  }
+  if(spr.y < screen_.y || screen_.y >= spr.y + 8){
+    return;
+  }
+  
+  uint8_t chrPatternIdx = GetSprPattern(screen_, spr, attr, index);
+  if (bgPatternIdx != 0 && chrPatternIdx != 0) {
+    SetSprite0Hit();
   }
 }
 
@@ -139,12 +196,14 @@ void Ppu::Clock()
   if (cycles_ == 340) {
     lines_++;
     cycles_ = 0;
-    if (lines_ == 260) {
+    if (lines_ == 262) {
       lines_ = 0;
       if (enableSpr_){
 	DrawSprPatterns();
       }
+      nmi_ = false;
       ClearVblank();
+      ClearSprite0Hit();
       display_.Update();
     } 
   }
@@ -286,6 +345,14 @@ bool Ppu::SpriteOverflow() {
 
 bool Ppu::Sprite0Hit() {
   return ppuStatus_>>6 & 0b1;
+}
+
+void Ppu::SetSprite0Hit() {
+  ppuStatus_ |= 0b01000000;
+}
+
+void Ppu::ClearSprite0Hit() {
+  ppuStatus_ &= 0b10111111;
 }
 
 void Ppu::SetVblank() {

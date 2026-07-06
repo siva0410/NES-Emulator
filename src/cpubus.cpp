@@ -44,6 +44,9 @@ uint8_t CpuBus::Read(uint16_t addr) const
       // throw std::runtime_error("READ: Out of apu or i/o register.");
     }
   }
+  else if(addr >= 0x4020 && addr <= 0x5FFF) {
+    return 0x00;
+  }
   /* PRG_ROM */
   else if(addr >= 0x6000 && addr <= 0x7FFF) {
     return rom_->ReadRam(addr&0x1FFF);
@@ -57,6 +60,12 @@ uint8_t CpuBus::Read(uint16_t addr) const
     }
   }
   else {
+    std::cout << "0x"
+	      << std::hex << std::uppercase
+	      << std::setw(4) << std::setfill('0')
+	      << static_cast<int>(addr)
+	      << std::dec << std::setfill(' ')
+	      << '\n';
     throw std::runtime_error("READ: Out of CPUBUS.");
   }
 }
@@ -118,6 +127,13 @@ void CpuBus::Write(uint16_t addr, uint8_t data)
     rom_->WriteRam(addr&0x1FFF, data);
   }
   else {
+    std::cout << "0x"
+	      << std::hex << std::uppercase
+	      << std::setw(4) << std::setfill('0')
+	      << static_cast<int>(addr)
+	      << std::dec << std::setfill(' ')
+	      << '\n';
+
     throw std::runtime_error("WRITE: Out of CPUBUS.");
   }
 }
