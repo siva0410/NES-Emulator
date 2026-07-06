@@ -163,10 +163,10 @@ void Ppu::CheckSprite0Hit(uint8_t bgPatternIdx)
   attr = oam_.Read(2);
   spr.x = oam_.Read(3);
   
-  if(spr.x < screen_.x || screen_.x >= spr.x + 8){
+  if(spr.x >= screen_.x || screen_.x < spr.x + 8){
     return;
   }
-  if(spr.y < screen_.y || screen_.y >= spr.y + 8){
+  if(spr.y >= screen_.y || screen_.y < spr.y + 8){
     return;
   }
   
