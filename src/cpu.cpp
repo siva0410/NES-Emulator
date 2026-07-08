@@ -105,15 +105,15 @@ void Cpu::Clock()
     break;
     
   case Zp:
-    operand = cpubus_.Read(regs_.pc++);
+    operand = cpubus_.Read(regs_.pc++) & 0xFF;
     break;
     
   case ZpX:
-    operand = cpubus_.Read(regs_.pc++) + regs_.x;
+    operand = (cpubus_.Read(regs_.pc++) + regs_.x) & 0xFF;
     break;
     
   case ZpY:
-    operand = cpubus_.Read(regs_.pc++) + regs_.y;
+    operand = (cpubus_.Read(regs_.pc++) + regs_.y) & 0xFF;
     break;
     
   case Abs:
@@ -138,13 +138,14 @@ void Cpu::Clock()
     break;
     
   case IndX:
-    addr = (cpubus_.Read(regs_.pc++) | (cpubus_.Read(regs_.pc++)<<8)) + regs_.x;
-    operand = cpubus_.Read(addr) | (cpubus_.Read(addr+1)<<8);
+    addr = cpubus_.Read(regs_.pc++) + regs_.x;
+    operand = cpubus_.Read(addr&0xFF) | (cpubus_.Read((addr+1)&0xFF)<<8);
     break;
     
   case IndY:
-    addr = cpubus_.Read(regs_.pc++) | (cpubus_.Read(regs_.pc++)<<8);
-    operand = (cpubus_.Read(addr) | (cpubus_.Read(addr+1)<<8)) + regs_.y;
+    addr = cpubus_.Read(regs_.pc++);
+    operand = cpubus_.Read(addr&0xFF) | (cpubus_.Read((addr+1)&0xFF)<<8);
+    operand += regs_.y;
     break;
     
   case Rel:
@@ -160,6 +161,7 @@ void Cpu::Clock()
   uint8_t arg1{};
   uint8_t arg2{};
   uint8_t res{};
+  uint8_t oldCarry{};
   uint16_t res16{};
   switch(optable_.at(idx).opcode) {
   case LDA:
@@ -217,7 +219,8 @@ void Cpu::Clock()
     regs_.y = regs_.a;
     UpdateZeroFlag(regs_.y);
     UpdateNegativeFlag(regs_.y);
-
+    break;
+    
   case TSX:
     regs_.x = regs_.s;
     UpdateZeroFlag(regs_.x);
@@ -232,8 +235,6 @@ void Cpu::Clock()
     
   case TXS:
     regs_.s = regs_.x;
-    UpdateZeroFlag(regs_.s);
-    UpdateNegativeFlag(regs_.s);
     break;
 
   case TYA:
@@ -254,8 +255,12 @@ void Cpu::Clock()
     res16 = arg1 + arg2 + Carry();
     regs_.a = res16 & 0xFF;
     
-    if(res16>>8 & 0b1) SetCarry();
-    else UnsetCarry();
+    if(res16>>8 & 0b1) {
+      SetCarry();
+    }
+    else {
+      UnsetCarry();
+    }
     UpdateZeroFlag(regs_.a);
     UpdateAdcOverflowFlag(arg1, arg2, res16);
     UpdateNegativeFlag(regs_.a);
@@ -275,13 +280,26 @@ void Cpu::Clock()
   case ASL:
     if(optable_.at(idx).mode == Acc) {
       arg1 = regs_.a;
+      res = arg1 << 1;
+      if(arg1>>7 & 0b1) {
+	SetCarry();
+      }
+      else {
+	UnsetCarry();
+      }
+      regs_.a = res;
     }
     else {
       arg1 = cpubus_.Read(operand);
+      res = arg1 << 1;
+      if(arg1>>7 & 0b1) {
+	SetCarry();
+      }
+      else {
+	UnsetCarry();
+      }
+      cpubus_.Write(operand, res);
     }
-    res = arg1 << 1;
-    if(arg1>>7 & 0b1) SetCarry();
-    else UnsetCarry();
     UpdateZeroFlag(res);
     UpdateNegativeFlag(res);
     break;
@@ -406,13 +424,26 @@ void Cpu::Clock()
   case LSR:
     if(optable_.at(idx).mode == Acc) {
       arg1 = regs_.a;
+      res = arg1 >> 1;
+      if(arg1 & 0b1) {
+	SetCarry();
+      }
+      else {
+	UnsetCarry();
+      }
+      regs_.a = res;
     }
     else {
       arg1 = cpubus_.Read(operand);
+      res = arg1 >> 1;
+      if(arg1 & 0b1) {
+	SetCarry();
+      }
+      else {
+	UnsetCarry();
+      }
+      cpubus_.Write(operand, res);
     }
-    res = arg1 >> 1;
-    if(arg1 & 0b1) SetCarry();
-    else UnsetCarry();
     UpdateZeroFlag(res);
     UpdateNegativeFlag(res);
     break;
@@ -429,49 +460,82 @@ void Cpu::Clock()
     break;
     
   case ROL:
+    oldCarry = Carry();
     if(optable_.at(idx).mode == Acc) {
       arg1 = regs_.a;
+      if(arg1>>7 & 0b1) {
+	SetCarry();
+      }
+      else {
+	UnsetCarry();
+      }
+      res = arg1 << 1;
+      res = res | oldCarry;
+      regs_.a = res;
     }
     else {
       arg1 = cpubus_.Read(operand);
+      if(arg1>>7 & 0b1) {
+	SetCarry();
+      }
+      else {
+	UnsetCarry();
+      }
+      res = arg1 << 1;
+      res = res | oldCarry;
+      cpubus_.Write(operand, res);
     }
-    if(arg1>>7 & 0b1) SetCarry();
-    else UnsetCarry();
-    res = arg1 << 1;
-    res = res | Carry();
     UpdateZeroFlag(res);
     UpdateNegativeFlag(res);
     break;
     
   case ROR:
+    oldCarry = Carry();
     if(optable_.at(idx).mode == Acc) {
       arg1 = regs_.a;
+      if(arg1 & 0b1) {
+	SetCarry();
+      }
+      else {
+	UnsetCarry();
+      }
+      res = arg1 >> 1;
+      res = res | (oldCarry<<7);
+      regs_.a = res;
     }
     else {
       arg1 = cpubus_.Read(operand);
+      if(arg1 & 0b1) {
+	SetCarry();
+      }
+      else {
+	UnsetCarry();
+      }
+      res = arg1 >> 1;
+      res = res | (oldCarry<<7);
+      cpubus_.Write(operand, res);
     }
-    if(arg1 & 0b1) SetCarry();
-    else UnsetCarry();
-    res = arg1 >> 1;
-    res = res | (Carry()<<7);
     UpdateZeroFlag(res);
     UpdateNegativeFlag(res);
     break;
     
   case SBC:
+    arg1 = regs_.a;
     if(optable_.at(idx).mode == Imm) {
-      arg1 = regs_.a;
       arg2 = operand;
     }
     else {
-      arg1 = regs_.a;
       arg2 = cpubus_.Read(operand);
     }
-    res16 = arg1 - arg2 - (1-Carry());
-    regs_.a = res16 & 0xFF;
+    res16 = arg1 + (arg2^0xFF) + Carry();
     
-    if(res16>>8 & 0b1) SetCarry();
-    else UnsetCarry();
+    if(res16 > 0xFF) {
+      SetCarry();
+    }
+    else {
+      UnsetCarry();
+    }
+    regs_.a = res16 & 0xFF;
     UpdateZeroFlag(regs_.a);
     UpdateSbcOverflowFlag(arg1, arg2, res16);
     UpdateNegativeFlag(regs_.a);
@@ -578,7 +642,11 @@ void Cpu::Clock()
     break;
     
   case BRK:
+    Push16(regs_.pc);
+    Push(regs_.flag | 0b00110000);
     SetBreak();
+    SetIRQ();
+    regs_.pc = cpubus_.Read(0xFFFE) | (cpubus_.Read(0xFFFF) << 8);
     break;
     
   case NOP:

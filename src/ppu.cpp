@@ -79,8 +79,8 @@ uint8_t Ppu::GetSprPattern(Point screen, Point spr, uint8_t attr, uint16_t chrId
     pattern.y = fine.y;
   }
   
-  uint8_t patternLow = ppubus_.Read(patternAddr+fine.y);
-  uint8_t patternHi = ppubus_.Read(patternAddr+fine.y+0x8);
+  uint8_t patternLow = ppubus_.Read(patternAddr+pattern.y);
+  uint8_t patternHi = ppubus_.Read(patternAddr+pattern.y+0x8);
 
   if(flipHorizon){
     pattern.x = 7-fine.x;
@@ -88,7 +88,7 @@ uint8_t Ppu::GetSprPattern(Point screen, Point spr, uint8_t attr, uint16_t chrId
   else {
     pattern.x = fine.x;
   }
-  uint8_t patternIdx = patternLow>>(7-fine.x) & 0x1 | (patternHi>>(7-fine.x) & 0x1) << 1;
+  uint8_t patternIdx = patternLow>>(7-pattern.x) & 0x1 | (patternHi>>(7-pattern.x) & 0x1) << 1;
 
   return patternIdx;
 }
@@ -96,30 +96,16 @@ uint8_t Ppu::GetSprPattern(Point screen, Point spr, uint8_t attr, uint16_t chrId
 void Ppu::DrawSprPattern(Point spr, uint8_t attr, uint16_t chrIdx)
 {
   uint8_t palletIdx = attr & 0b11;
-  bool flipHorizon = attr>>6 & 0b1;
-  bool flipVertical = attr>>7 & 0b1;
-  Point pattern{};
+  uint16_t patternAddr = SpritePTAddr() + 0x10*chrIdx;
   Point fine{};
   
   for(fine.y=0; fine.y<8; fine.y++) {
-    if(flipVertical){
-       pattern.y = 7-fine.y;
-    }
-    else {
-      pattern.y = fine.y;
-    }
     for(fine.x=0; fine.x<8; fine.x++) {
-      if(flipHorizon){
-	pattern.x = 7-fine.x;
-      }
-      else {
-	pattern.x = fine.x;
-      }
       uint8_t patternIdx = GetSprPattern(Point{spr.x+fine.x,spr.y+fine.y}, spr, attr, chrIdx);
       if (patternIdx == 0) {
 	continue;
       }
-      Point patternPoint{spr.x+pattern.x, spr.y+pattern.y};
+      Point patternPoint{spr.x+fine.x, spr.y+fine.y};
       if (patternPoint.x < 0 || patternPoint.x >= 256) {
 	continue;
       }
@@ -163,16 +149,21 @@ void Ppu::CheckSprite0Hit(uint8_t bgPatternIdx)
   attr = oam_.Read(2);
   spr.x = oam_.Read(3);
   
-  if(spr.x >= screen_.x || screen_.x < spr.x + 8){
+  if(spr.x >= screen_.x || spr.x + 8 < screen_.x){
     return;
   }
-  if(spr.y >= screen_.y || screen_.y < spr.y + 8){
+  if(spr.y >= screen_.y || spr.y + 8 < screen_.y){
+    return;
+  }
+  if((attr>>5 & 0b1) == 1){
     return;
   }
   
   uint8_t chrPatternIdx = GetSprPattern(screen_, spr, attr, index);
   if (bgPatternIdx != 0 && chrPatternIdx != 0) {
     SetSprite0Hit();
+    std::cout << "Sprite0Hit! x: " << screen_.x << " y: " << screen_.y << std::endl;
+    std::cout << "0 sprite x: " <<  spr.x << " y: " << spr.y << std::endl;
   }
 }
 
