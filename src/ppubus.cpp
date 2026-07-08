@@ -71,7 +71,10 @@ uint8_t PpuBus::Read(uint16_t addr) const
 
 void PpuBus::Write(uint16_t addr, uint8_t data)
 {
-  if (addr >= 0x2000 && addr <= 0x2FFF) {
+  if(addr >= 0x0000 && addr <= 0x1FFF) {
+    // No action
+  }
+  else if (addr >= 0x2000 && addr <= 0x2FFF) {
     addr = addr & 0x0FFF;
     if (rom_->IsVerticalMirror()) {
       /* VRAM NT0 */

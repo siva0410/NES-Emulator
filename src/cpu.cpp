@@ -766,7 +766,7 @@ void Cpu::MakeOpTable()
 
   optable_[0x49] = { "EOR", Opcode::EOR, AddrMode::Imm, 2, 2};
   optable_[0x45] = { "EOR", Opcode::EOR, AddrMode::Zp, 2, 3};
-  optable_[0x45] = { "EOR", Opcode::EOR, AddrMode::ZpX, 2, 4};
+  optable_[0x55] = { "EOR", Opcode::EOR, AddrMode::ZpX, 2, 4};
   optable_[0x4D] = { "EOR", Opcode::EOR, AddrMode::Abs, 3, 4};
   optable_[0x5D] = { "EOR", Opcode::EOR, AddrMode::AbsX, 3, 4};
   optable_[0x59] = { "EOR", Opcode::EOR, AddrMode::AbsY, 3, 4};
@@ -797,6 +797,12 @@ void Cpu::MakeOpTable()
   optable_[0x01] = { "ORA", Opcode::ORA, AddrMode::IndX, 2, 6};
   optable_[0x11] = { "ORA", Opcode::ORA, AddrMode::IndY, 2, 5};
 
+  optable_[0x2A] = { "ROL", Opcode::ROL, AddrMode::Acc, 1, 2};
+  optable_[0x26] = { "ROL", Opcode::ROL, AddrMode::Zp, 2, 5};
+  optable_[0x36] = { "ROL", Opcode::ROL, AddrMode::ZpX, 2, 6};
+  optable_[0x2E] = { "ROL", Opcode::ROL, AddrMode::Abs, 3, 6};
+  optable_[0x3E] = { "ROL", Opcode::ROL, AddrMode::AbsX, 3, 7};
+  
   optable_[0x6A] = { "ROR", Opcode::ROR, AddrMode::Acc, 1, 2};
   optable_[0x66] = { "ROR", Opcode::ROR, AddrMode::Zp, 2, 5};
   optable_[0x76] = { "ROR", Opcode::ROR, AddrMode::ZpX, 2, 6};
@@ -818,7 +824,7 @@ void Cpu::MakeOpTable()
   
   optable_[0x68] = { "PLA", Opcode::PLA, AddrMode::Imp, 1, 4};
 
-  optable_[0x28] = { "PHP", Opcode::PHP, AddrMode::Imp, 1, 4};
+  optable_[0x28] = { "PLP", Opcode::PLP, AddrMode::Imp, 1, 4};
 
   optable_[0x4C] = { "JMP", Opcode::JMP, AddrMode::Abs, 3, 3};
   optable_[0x6C] = { "JMP", Opcode::JMP, AddrMode::Ind, 3, 5};

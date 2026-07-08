@@ -120,9 +120,9 @@ void Cpu::UpdateAdcOverflowFlag(uint8_t arg1, uint8_t arg2, uint16_t sum)
     if(sumsign != arg1sign) {
       SetOverflow();
     }
-  }
-  else {
-    UnsetOverflow();
+    else {
+      UnsetOverflow();
+    }
   }
 }
 
@@ -135,9 +135,9 @@ void Cpu::UpdateSbcOverflowFlag(uint8_t arg1, uint8_t arg2, uint16_t sum)
     if(sumsign != arg1sign) {
       SetOverflow();
     }
-  }
-  else {
-    UnsetOverflow();
+    else {
+      UnsetOverflow();
+    }
   }
 }
 

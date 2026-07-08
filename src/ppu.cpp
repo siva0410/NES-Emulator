@@ -3,16 +3,16 @@
 #include <iterator>
 
 Ppu::Ppu(PpuBus& ppubus, Ram& palletram, Display& display)
-  : ppubus_(ppubus), palletram_(palletram), display_(display)
+  : ppubus_(ppubus), display_(display)
 {
   for(uint32_t i=0; i<64; i++) {
     oam_.Write(i*4, 0xF0);
   }
 }
 
-uint8_t Ppu::GetBGPallet()
+uint8_t Ppu::GetBGPallet(uint8_t ntIdx)
 {
-  uint8_t palletByte = ppubus_.Read(0x2000+ntIdx_*0x400+0x3C0+(coarse_.x>>2)+(coarse_.y>>2)*8);
+  uint8_t palletByte = ppubus_.Read(0x2000+ntIdx*0x400+0x3C0+(coarse_.x>>2)+(coarse_.y>>2)*8);
   uint8_t palletIdx = (coarse_.x>>1)&0b1 | ((coarse_.y>>1)&0b1)<<1;
   palletIdx = palletIdx<<1;
   uint8_t pallet = (palletByte >> palletIdx) & 0b11;
@@ -33,25 +33,44 @@ RGB Ppu::GetBGColor(uint8_t palletIdx, uint8_t patternIdx)
   return color;
 }
 
-void Ppu::DrawBGPixel()
+void Ppu::LatchYScroll()
 {
-  bg_.x = screen_.x + scroll_.x;
-  bg_.y = screen_.y + scroll_.y;
-  ntIdx_ = (ppuCtrl_&0b11) ^ (bg_.x/256)&0b1 ^ (((bg_.y/240)&0b1)<<1);
-  coarse_.x = (bg_.x>>3) % 32;
-  coarse_.y = (bg_.y>>3) % 30;
-  fine_.x = bg_.x & 0b111;
-  fine_.y = bg_.y & 0b111;
-  
-  uint8_t chrIdx = ppubus_.Read(0x2000+ntIdx_*0x400+coarse_.x+coarse_.y*32);
+  coarse_.y = scroll_.y >> 3;
+  fine_.y = scroll_.y & 0b111;
+  nametableY_ = (ppuCtrl_ >> 1) & 0b1;
+}
+
+void Ppu::IncrementY()
+{
+  if (fine_.y < 7) {
+    fine_.y++;
+    return;
+  }
+  fine_.y = 0;
+  if (coarse_.y == 29) {
+    coarse_.y = 0;
+    nametableY_ ^= 1;
+  } else if (coarse_.y == 31) {
+    coarse_.y = 0;
+  } else {
+    coarse_.y++;
+  }
+}
+
+void Ppu::DrawBGPixel(Point screen)
+{
+  uint32_t bgX = screen.x + scroll_.x;
+  coarse_.x = (bgX>>3) % 32;
+  fine_.x = bgX & 0b111;
+  uint8_t ntX = (ppuCtrl_ & 0b01) ^ ((bgX>>8) & 0b1);
+  uint8_t ntIdx = ntX | (nametableY_ << 1);
+  uint8_t chrIdx = ppubus_.Read(0x2000+ntIdx*0x400+coarse_.x+coarse_.y*32);
   uint16_t patternAddr = BackgroundPTAddr() + 0x10*chrIdx;
   uint8_t patternLow = ppubus_.Read(patternAddr+fine_.y);
   uint8_t patternHi = ppubus_.Read(patternAddr+0x8+fine_.y);
   uint8_t patternIdx = (patternLow>>(7-fine_.x) & 0b1) | ((patternHi>>(7-fine_.x) & 0b1) << 1);
-  if (bg_.y < 240) {
-    CheckSprite0Hit(patternIdx);
-    display_.Write(screen_, GetBGColor(GetBGPallet(), patternIdx));
-  }
+  CheckSprite0Hit(screen, patternIdx);
+  display_.Write(screen, GetBGColor(GetBGPallet(ntIdx), patternIdx));
 }
 
 RGB Ppu::GetSprColor(uint8_t palletIdx, uint8_t patternIdx)
@@ -66,12 +85,8 @@ uint8_t Ppu::GetSprPattern(Point screen, Point spr, uint8_t attr, uint16_t chrId
   bool flipHorizon = attr>>6 & 0b1;
   bool flipVertical = attr>>7 & 0b1;
   uint16_t patternAddr = SpritePTAddr() + 0x10*chrIdx;
+  Point fine{screen.x - spr.x, screen.y - spr.y};
   Point pattern{};
-  Point fine{};
-  
-  fine.x = screen.x - spr.x;
-  fine.y = screen.y - spr.y;
-  
   if(flipVertical){
     pattern.y = 7-fine.y;
   }
@@ -97,8 +112,8 @@ void Ppu::DrawSprPattern(Point spr, uint8_t attr, uint16_t chrIdx)
 {
   uint8_t palletIdx = attr & 0b11;
   uint16_t patternAddr = SpritePTAddr() + 0x10*chrIdx;
-  Point fine{};
   
+  Point fine{};
   for(fine.y=0; fine.y<8; fine.y++) {
     for(fine.x=0; fine.x<8; fine.x++) {
       uint8_t patternIdx = GetSprPattern(Point{spr.x+fine.x,spr.y+fine.y}, spr, attr, chrIdx);
@@ -135,12 +150,12 @@ void Ppu::DrawSprPatterns()
   }
 }
 
-void Ppu::CheckSprite0Hit(uint8_t bgPatternIdx)
+void Ppu::CheckSprite0Hit(Point screen, uint8_t bgPatternIdx)
 {
   if(Sprite0Hit()) return;
   if(!enableBg_) return;
   if(!enableSpr_) return;
-  
+
   Point spr{};
   uint8_t index{};
   uint8_t attr{};
@@ -148,47 +163,50 @@ void Ppu::CheckSprite0Hit(uint8_t bgPatternIdx)
   index = oam_.Read(1);
   attr = oam_.Read(2);
   spr.x = oam_.Read(3);
-  
-  if(spr.x >= screen_.x || spr.x + 8 < screen_.x){
+
+  if(spr.x > screen.x || spr.x + 8 <= screen.x){
     return;
   }
-  if(spr.y >= screen_.y || spr.y + 8 < screen_.y){
+  if(spr.y > screen.y || spr.y + 8 <= screen.y){
     return;
   }
-  if((attr>>5 & 0b1) == 1){
-    return;
-  }
-  
-  uint8_t chrPatternIdx = GetSprPattern(screen_, spr, attr, index);
+  // if((attr>>5 & 0b1) == 1){
+  //   return;
+  // }
+
+  uint8_t chrPatternIdx = GetSprPattern(screen, spr, attr, index);
   if (bgPatternIdx != 0 && chrPatternIdx != 0) {
     SetSprite0Hit();
-    std::cout << "Sprite0Hit! x: " << screen_.x << " y: " << screen_.y << std::endl;
-    std::cout << "0 sprite x: " <<  spr.x << " y: " << spr.y << std::endl;
+    // std::cout << "Sprite0Hit! x: " << screen.x << " y: " << screen.y << std::endl;
+    // std::cout << "0 sprite x: " <<  spr.x << " y: " << spr.y << std::endl;
   }
 }
 
 void Ppu::Clock()
 {
   if (cycles_ < 256 && lines_ < 240) {
-    screen_.x = cycles_;
-    screen_.y = lines_;
+    Point screen{cycles_, lines_};
     if (enableBg_) {
-      if (showLeftBg_ || screen_.x >= 8) {
-	DrawBGPixel();
-      } 
+      if (showLeftBg_ || screen.x >= 8) {
+	DrawBGPixel(screen);
+      }
     }
   }
-  
+
   if (lines_ == 240 && cycles_ == 0) {
     SetVblank();
     nmi_ = true;
   }
-  
+
   if (cycles_ == 340) {
+    if (enableBg_) {
+      IncrementY();
+    }
     lines_++;
     cycles_ = 0;
     if (lines_ == 262) {
       lines_ = 0;
+      LatchYScroll();
       if (enableSpr_){
 	DrawSprPatterns();
       }
@@ -196,7 +214,7 @@ void Ppu::Clock()
       ClearVblank();
       ClearSprite0Hit();
       display_.Update();
-    } 
+    }
   }
   else {
     cycles_++;
@@ -287,9 +305,11 @@ void Ppu::WritePpuAddr(uint8_t data)
 {
   if(!latch_) {
     ppuAddr_ = data<<8;
+    ppuAddr_ &= 0x3FFF;
     latch_ = true;
   } else {
     ppuAddr_ |= data;
+    ppuAddr_ &= 0x3FFF;
     latch_ = false;
   }
 }
@@ -298,6 +318,7 @@ uint8_t Ppu::ReadPpuData()
 {
   uint8_t data = ppubus_.Read(ppuAddr_);
   ppuAddr_ += IncPpuAddrSize();
+  ppuAddr_ &= 0x3FFF;
   return data;
 }
 
@@ -308,6 +329,7 @@ void Ppu::WritePpuData(uint8_t data)
   }
   ppubus_.Write(ppuAddr_, data);
   ppuAddr_ += IncPpuAddrSize();
+  ppuAddr_ &= 0x3FFF;
 }
 
 void Ppu::WriteOamAddr(uint8_t data)

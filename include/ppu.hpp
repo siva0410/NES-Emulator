@@ -15,28 +15,19 @@ class Ppu {
 private:
   Display& display_;
   PpuBus& ppubus_;
-  Ram& palletram_;
   uint32_t cycles_{};
   uint32_t lines_{};
   bool nmi_{};
-  // Point p_{};
   uint8_t ppuCtrl_{};
-  // uint8_t ppuMask_{};
   bool showLeftBg_{};
   bool showLeftSpr_{};
   bool enableBg_{};
   bool enableSpr_{};
   uint8_t ppuStatus_{};
-  Point screen_{};
   Point scroll_{};
-  Point bg_{};
   Point coarse_{};
   Point fine_{};
-  uint8_t ntIdx_{};
-  // uint32_t screenX_{};
-  // uint32_t screenY_{};
-  uint32_t scrollX_{};
-  uint32_t scrollY_{};
+  uint8_t nametableY_{};
   bool latch_{};
   uint16_t ppuAddr_{};
   uint8_t oamAddr_{};
@@ -62,11 +53,13 @@ private:
     }
   };
   void DrawBGPattern();
-  void DrawBGPixel();
+  void DrawBGPixel(Point screen);
+  void LatchYScroll();
+  void IncrementY();
   uint8_t GetSprPattern(Point screen, Point spr, uint8_t attr, uint16_t chrIdx);
   void DrawSprPattern(Point p, uint8_t attr, uint16_t chrIdx);
   void DrawSprPatterns();
-  uint8_t GetBGPallet();
+  uint8_t GetBGPallet(uint8_t ntIdx);
   RGB GetSprColor(uint8_t palletIdx, uint8_t patternIdx);
   RGB GetBGColor(uint8_t palletIdx, uint8_t patternIdx);
   uint8_t IncPpuAddrSize();
@@ -74,7 +67,7 @@ private:
   uint16_t BackgroundPTAddr();
   uint8_t SpriteSize();
   bool SpriteOverflow();
-  void CheckSprite0Hit(uint8_t bgPatternIdx);
+  void CheckSprite0Hit(Point screen, uint8_t bgPatternIdx);
   bool Sprite0Hit();
   void SetSprite0Hit();
   void ClearSprite0Hit();
