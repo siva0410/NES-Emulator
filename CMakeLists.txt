@@ -1,8 +1,15 @@
 cmake_minimum_required(VERSION 3.20)
 
+if(NOT CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE Release)
+endif()
+
 project(nes
     LANGUAGES CXX
 )
+
+include(CheckIPOSupported)
+check_ipo_supported(RESULT ipo_supported OUTPUT ipo_error)
 
 add_executable(nes
     src/main.cpp
@@ -35,3 +42,7 @@ target_include_directories(nes
 target_compile_features(nes
     PRIVATE cxx_std_20
 )
+
+if(ipo_supported)
+    set_target_properties(nes PROPERTIES INTERPROCEDURAL_OPTIMIZATION TRUE)
+endif()
