@@ -124,6 +124,9 @@ void Cpu::UpdateAdcOverflowFlag(uint8_t arg1, uint8_t arg2, uint16_t sum)
       UnsetOverflow();
     }
   }
+  else {
+    UnsetOverflow();
+  }
 }
 
 void Cpu::UpdateSbcOverflowFlag(uint8_t arg1, uint8_t arg2, uint16_t sum)
@@ -138,6 +141,9 @@ void Cpu::UpdateSbcOverflowFlag(uint8_t arg1, uint8_t arg2, uint16_t sum)
     else {
       UnsetOverflow();
     }
+  }
+  else {
+    UnsetOverflow();
   }
 }
 

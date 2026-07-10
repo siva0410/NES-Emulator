@@ -68,7 +68,7 @@ void Nes::Start()
       }
       KeyboardHandler(event);
     }
-    
+
     cpu_.Clock();
     for(uint8_t i=0; i<3; i++) {
       ppu_.Clock();

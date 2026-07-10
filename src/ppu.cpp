@@ -50,9 +50,11 @@ void Ppu::IncrementY()
   if (coarse_.y == 29) {
     coarse_.y = 0;
     nametableY_ ^= 1;
-  } else if (coarse_.y == 31) {
+  }
+  else if (coarse_.y == 31) {
     coarse_.y = 0;
-  } else {
+  }
+  else {
     coarse_.y++;
   }
 }

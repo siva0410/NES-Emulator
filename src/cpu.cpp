@@ -117,19 +117,25 @@ void Cpu::Clock()
     break;
     
   case Abs:
-    operand = cpubus_.Read(regs_.pc++) | (cpubus_.Read(regs_.pc++)<<8);
+    operand = cpubus_.Read(regs_.pc++);
+    operand |= cpubus_.Read(regs_.pc++)<<8;
     break;
     
   case AbsX:
-    operand = (cpubus_.Read(regs_.pc++) | (cpubus_.Read(regs_.pc++)<<8)) + regs_.x;
+    operand = cpubus_.Read(regs_.pc++);
+    operand |= cpubus_.Read(regs_.pc++)<<8;
+    operand += regs_.x;
     break;
     
   case AbsY:
-    operand = (cpubus_.Read(regs_.pc++) | (cpubus_.Read(regs_.pc++)<<8)) + regs_.y;
+    operand = cpubus_.Read(regs_.pc++);
+    operand |= (cpubus_.Read(regs_.pc++)<<8);
+    operand += regs_.y;
     break;
     
   case Ind:
-    addr = cpubus_.Read(regs_.pc++) | (cpubus_.Read(regs_.pc++)<<8);
+    addr = cpubus_.Read(regs_.pc++);
+    addr |= cpubus_.Read(regs_.pc++)<<8;
     if((addr&0xFF) == 0xFF){
       operand = cpubus_.Read(addr) | (cpubus_.Read(addr&0xFF00)<<8);
     } else {
@@ -582,35 +588,75 @@ void Cpu::Clock()
     break;
     
   case BCC:
-    if(!Carry()) regs_.pc += static_cast<int8_t>(operand);
+    if(!Carry()) {
+      uint16_t oldPc = regs_.pc;
+      regs_.pc += static_cast<int8_t>(operand);
+      cycles_++;
+      if((oldPc & 0xFF00) != (regs_.pc & 0xFF00)) cycles_++;
+    }
     break;
-    
+
   case BCS:
-    if(Carry()) regs_.pc += static_cast<int8_t>(operand);
+    if(Carry()) {
+      uint16_t oldPc = regs_.pc;
+      regs_.pc += static_cast<int8_t>(operand);
+      cycles_++;
+      if((oldPc & 0xFF00) != (regs_.pc & 0xFF00)) cycles_++;
+    }
     break;
-    
+
   case BEQ:
-    if(Zero()) regs_.pc += static_cast<int8_t>(operand);
+    if(Zero()) {
+      uint16_t oldPc = regs_.pc;
+      regs_.pc += static_cast<int8_t>(operand);
+      cycles_++;
+      if((oldPc & 0xFF00) != (regs_.pc & 0xFF00)) cycles_++;
+    }
     break;
-    
+
   case BMI:
-    if(Negative()) regs_.pc += static_cast<int8_t>(operand);
+    if(Negative()) {
+      uint16_t oldPc = regs_.pc;
+      regs_.pc += static_cast<int8_t>(operand);
+      cycles_++;
+      if((oldPc & 0xFF00) != (regs_.pc & 0xFF00)) cycles_++;
+    }
     break;
-    
+
   case BNE:
-    if(!Zero()) regs_.pc += static_cast<int8_t>(operand);
+    if(!Zero()) {
+      uint16_t oldPc = regs_.pc;
+      regs_.pc += static_cast<int8_t>(operand);
+      cycles_++;
+      if((oldPc & 0xFF00) != (regs_.pc & 0xFF00)) cycles_++;
+    }
     break;
-    
+
   case BPL:
-    if(!Negative()) regs_.pc += static_cast<int8_t>(operand);
+    if(!Negative()) {
+      uint16_t oldPc = regs_.pc;
+      regs_.pc += static_cast<int8_t>(operand);
+      cycles_++;
+      if((oldPc & 0xFF00) != (regs_.pc & 0xFF00)) cycles_++;
+    }
     break;
-    
+
   case BVC:
-    if(!Overflow()) regs_.pc += static_cast<int8_t>(operand);
+    if(!Overflow()) {
+      uint16_t oldPc = regs_.pc;
+      regs_.pc += static_cast<int8_t>(operand);
+      cycles_++;
+      if((oldPc & 0xFF00) != (regs_.pc & 0xFF00)) cycles_++;
+    }
     break;
-    
+
   case BVS:
-    if(Overflow()) regs_.pc += static_cast<int8_t>(operand);
+    if(Overflow()) {
+      uint16_t oldPc = regs_.pc;
+      regs_.pc += static_cast<int8_t>(operand);
+      cycles_++;
+      if((oldPc & 0xFF00) != (regs_.pc & 0xFF00)) cycles_++;
+    }
     break;
     
   case CLC:
