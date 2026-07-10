@@ -14,6 +14,9 @@ uint8_t PpuBus::Read(uint16_t addr) const
 {
   /* CHR_ROM */
   if(addr >= 0x0000 && addr <= 0x1FFF) {
+    if(rom_->IsChrRam()) {
+      return rom_->ReadChrRam(addr);
+    }
     return rom_->ReadChrRom(addr);
   }
   else if (addr >= 0x2000 && addr <= 0x2FFF) {
@@ -72,7 +75,9 @@ uint8_t PpuBus::Read(uint16_t addr) const
 void PpuBus::Write(uint16_t addr, uint8_t data)
 {
   if(addr >= 0x0000 && addr <= 0x1FFF) {
-    // No action
+    if(rom_->IsChrRam()) {
+      rom_->WriteChrRam(addr, data);
+    }
   }
   else if (addr >= 0x2000 && addr <= 0x2FFF) {
     addr = addr & 0x0FFF;
