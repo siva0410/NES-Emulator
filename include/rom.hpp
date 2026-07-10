@@ -18,18 +18,22 @@ private:
   uint32_t chrromStart_;
   uint8_t mirroring_{};
   Memory rom_;
-  Ram ram_{0x2000};
+  Ram prgram_{0x2000};
+  Ram chrram_{0x2000};
   
   std::vector<uint8_t> Load(std::string file);
 public:
   uint32_t prgromSize;
   uint32_t chrromSize;
   Rom(std::string romfile);
-  bool IsVerticalMirror();
+  bool IsVerticalMirror() const;
   uint8_t ReadPrgRom(uint16_t addr) const;
+  uint8_t ReadPrgRam(uint16_t addr) const;
+  void WritePrgRam(uint16_t addr, uint8_t data);
+  bool IsChrRam() const;
   uint8_t ReadChrRom(uint16_t addr) const;
-  uint8_t ReadRam(uint16_t addr) const;
-  void WriteRam(uint16_t addr, uint8_t data);
+  uint8_t ReadChrRam(uint16_t addr) const;
+  void WriteChrRam(uint16_t addr, uint8_t data);
   void Dump() const;
   void RamDump() const;
 };
