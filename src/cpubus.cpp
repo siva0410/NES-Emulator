@@ -49,7 +49,7 @@ uint8_t CpuBus::Read(uint16_t addr) const
   }
   /* PRG_ROM */
   else if(addr >= 0x6000 && addr <= 0x7FFF) {
-    return rom_->ReadChrRam(addr&0x1FFF);
+    return rom_->ReadPrgRam(addr&0x1FFF);
   }
   else if(addr >= 0x8000 && addr <= 0xFFFF) {
     if (rom_->prgromSize == 0x4000) {
@@ -124,7 +124,7 @@ void CpuBus::Write(uint16_t addr, uint8_t data)
     }
   }
   else if(addr >= 0x6000 && addr <= 0x7FFF) {
-    rom_->WriteChrRam(addr&0x1FFF, data);
+    rom_->WritePrgRam(addr&0x1FFF, data);
   }
   else {
     std::cout << "0x"

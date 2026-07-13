@@ -16,7 +16,7 @@ void Cpu::Nmi()
   Push(regs_.flag);
   regs_.pc = cpubus_.Read(0xFFFA) | (cpubus_.Read(0XFFFB)<<8);
   SetIRQ();
-  cycles_ += 7;
+  cycles_ += 6;
 }
 
 void Cpu::RequestNmi()
@@ -82,10 +82,11 @@ void Cpu::Clock()
   if(nmiRequest_) {
     nmiRequest_ = false;
     Nmi();
+    return;
   }
     
   uint8_t idx{cpubus_.Read(regs_.pc++)};
-  cycles_ += optable_.at(idx).cycles;
+  cycles_ += optable_.at(idx).cycles - 1;
   
   // std::cout << std::hex << std::setw(4) << std::setfill('0')
   // 	    << static_cast<unsigned int>(regs_.pc-1) << ": "

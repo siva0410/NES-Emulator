@@ -40,32 +40,52 @@ void Ppu::LatchYScroll()
   nametableY_ = (ppuCtrl_ >> 1) & 0b1;
 }
 
-void Ppu::IncrementY()
-{
-  if (fine_.y < 7) {
-    fine_.y++;
-    return;
-  }
-  fine_.y = 0;
-  if (coarse_.y == 29) {
-    coarse_.y = 0;
-    nametableY_ ^= 1;
-  }
-  else if (coarse_.y == 31) {
-    coarse_.y = 0;
-  }
-  else {
-    coarse_.y++;
-  }
-}
+// void Ppu::IncrementY()
+// {
+//   if (fine_.y < 7) {
+//     fine_.y++;
+//     return;
+//   }
+//   fine_.y = 0;
+//   if (coarse_.y == 29) {
+//     coarse_.y = 0;
+//     nametableY_ ^= 1;
+//   }
+//   else if (coarse_.y == 31) {
+//     coarse_.y = 0;
+//   }
+//   else {
+//     coarse_.y++;
+//   }
+// }
+
+// void Ppu::DrawBGPixel(Point screen)
+// {
+//   uint32_t bgX = screen.x + scroll_.x;
+//   coarse_.x = (bgX>>3) % 32;
+//   fine_.x = bgX & 0b111;
+//   uint8_t ntX = (ppuCtrl_ & 0b01) ^ ((bgX>>8) & 0b1);
+//   uint8_t ntIdx = ntX | (nametableY_ << 1);
+//   uint8_t chrIdx = ppubus_.Read(0x2000+ntIdx*0x400+coarse_.x+coarse_.y*32);
+//   uint16_t patternAddr = BackgroundPTAddr() + 0x10*chrIdx;
+//   uint8_t patternLow = ppubus_.Read(patternAddr+fine_.y);
+//   uint8_t patternHi = ppubus_.Read(patternAddr+0x8+fine_.y);
+//   uint8_t patternIdx = (patternLow>>(7-fine_.x) & 0b1) | ((patternHi>>(7-fine_.x) & 0b1) << 1);
+//   CheckSprite0Hit(screen, patternIdx);
+//   display_.Write(screen, GetBGColor(GetBGPallet(ntIdx), patternIdx));
+// }
 
 void Ppu::DrawBGPixel(Point screen)
 {
-  uint32_t bgX = screen.x + scroll_.x;
-  coarse_.x = (bgX>>3) % 32;
-  fine_.x = bgX & 0b111;
-  uint8_t ntX = (ppuCtrl_ & 0b01) ^ ((bgX>>8) & 0b1);
-  uint8_t ntIdx = ntX | (nametableY_ << 1);
+  // uint32_t bgX = screen.x + scroll_.x;
+  // coarse_.x = (bgX>>3) % 32;
+  // fine_.x = bgX & 0b111;
+  coarse_.x = v_&0x1F;
+  coarse_.y = (v_>>5)&0x1F;
+  fine_.x = (finex_ + screen.x)&0x7;
+  fine_.y = (v_>>12)&0x7;
+  // uint8_t ntX = (ppuCtrl_ & 0b01) ^ ((bgX>>8) & 0b1);
+  uint8_t ntIdx = (v_>>10)&0b11;
   uint8_t chrIdx = ppubus_.Read(0x2000+ntIdx*0x400+coarse_.x+coarse_.y*32);
   uint16_t patternAddr = BackgroundPTAddr() + 0x10*chrIdx;
   uint8_t patternLow = ppubus_.Read(patternAddr+fine_.y);
@@ -140,7 +160,7 @@ void Ppu::DrawSprPatterns()
   uint8_t attr{};
   Point spr{};
   for(uint32_t i=0; i<64; i++) {
-    spr.y = oam_.Read(i*4);
+    spr.y = oam_.Read(i*4) + 1;
     index = oam_.Read(i*4+1);
     attr = oam_.Read(i*4+2);
     spr.x = oam_.Read(i*4+3);
@@ -157,11 +177,13 @@ void Ppu::CheckSprite0Hit(Point screen, uint8_t bgPatternIdx)
   if(Sprite0Hit()) return;
   if(!enableBg_) return;
   if(!enableSpr_) return;
-
+  if (screen.x < 8 && (!showLeftBg_ || !showLeftSpr_)) return;
+  if (screen.x == 255) return;
+  
   Point spr{};
   uint8_t index{};
   uint8_t attr{};
-  spr.y = oam_.Read(0);
+  spr.y = oam_.Read(0) + 1;
   index = oam_.Read(1);
   attr = oam_.Read(2);
   spr.x = oam_.Read(3);
@@ -172,9 +194,6 @@ void Ppu::CheckSprite0Hit(Point screen, uint8_t bgPatternIdx)
   if(spr.y > screen.y || spr.y + 8 <= screen.y){
     return;
   }
-  // if((attr>>5 & 0b1) == 1){
-  //   return;
-  // }
 
   uint8_t chrPatternIdx = GetSprPattern(screen, spr, attr, index);
   if (bgPatternIdx != 0 && chrPatternIdx != 0) {
@@ -186,35 +205,95 @@ void Ppu::CheckSprite0Hit(Point screen, uint8_t bgPatternIdx)
 
 void Ppu::Clock()
 {
-  if (cycles_ < 256 && lines_ < 240) {
+  bool rendering = lines_ < 240 || lines_ == 261;
+  
+  if(cycles_ < 256 && lines_ < 240) {
     Point screen{cycles_, lines_};
     if (enableBg_) {
       if (showLeftBg_ || screen.x >= 8) {
 	DrawBGPixel(screen);
       }
     }
+    if (enableBg_ || enableSpr_) {
+      if (((screen.x + finex_) & 0x7) == 7){
+	// increment x
+	if ((v_ & 0x1F) == 31) {
+	  // toggle nametable x
+	  v_ ^= 0x0400;
+	  // reset couarse x
+	  v_ &= ~0x001F;
+	} else {
+	  v_++;
+	}
+      }
+    }
+  }
+  
+  if(cycles_ == 256 && rendering) {
+    if (enableBg_ || enableSpr_) {
+      if ((v_&0x7000) != 0x7000) {
+	// increment fine y
+	v_ += 0x1000;
+      }
+      else {
+	uint32_t coarsey = (v_>>5)&0x1F;
+	// reset fine y
+	v_ &= ~0x7000;
+	if (coarsey == 29) {
+	  // toggle nametable y
+	  v_ ^= 0x0800;
+	  coarsey = 0;
+	}
+	else if (coarsey == 31) {
+	  coarsey = 0;
+	}
+	else {
+	  coarsey++;
+	}
+	v_ = (v_ & ~0x03E0) | (coarsey << 5);
+      }
+    }
+  }
+  
+  if(cycles_ == 257 && rendering) {
+    if (enableBg_ || enableSpr_) {
+      // coarse x
+      v_ = (v_&~0x001F) | (t_&0x001F);
+      // nametable x
+      v_ = (v_&~0x0400) | (t_&0x0400);
+    }
   }
 
-  if (lines_ == 240 && cycles_ == 0) {
+  if (lines_ == 241 && cycles_ == 1) {
     SetVblank();
     nmi_ = true;
   }
 
-  if (cycles_ == 340) {
-    if (enableBg_) {
-      IncrementY();
+  if (lines_ == 261 && cycles_ == 1) {
+    ClearVblank();
+    ClearSprite0Hit();
+  }
+  
+  if(lines_ == 261 && cycles_ >= 280 && cycles_ <= 304) {
+    if (enableBg_ || enableSpr_) {
+      // fine y
+      v_ = (v_&~0x7000) | (t_&0x7000);
+      // coarse y
+      v_ = (v_&~0x03E0) | (t_&0x03E0);
+      // nametable y
+      v_ = (v_&~0x0800) | (t_&0x0800);
     }
+  }
+
+  if (cycles_ == 340) {
     lines_++;
     cycles_ = 0;
     if (lines_ == 262) {
       lines_ = 0;
-      LatchYScroll();
       if (enableSpr_){
 	DrawSprPatterns();
       }
       nmi_ = false;
-      ClearVblank();
-      ClearSprite0Hit();
       display_.Update();
     }
   }
@@ -275,14 +354,15 @@ bool Ppu::IsNmiEnable() {
 void Ppu::WritePpuCtrl(uint8_t data)
 {
   ppuCtrl_ = data;
+  t_ = (t_&~0x0C00) | ((data&0b11)<<10);
 }
 
 void Ppu::WritePpuMask(uint8_t data)
 {
-  showLeftBg_ = data >> 1;
-  showLeftSpr_ = data >> 2;
-  enableBg_ = data >> 3;
-  enableSpr_ = data >> 4;
+  showLeftBg_ = (data >> 1) & 0b1;
+  showLeftSpr_ = (data >> 2) & 0b1;
+  enableBg_ = (data >> 3) & 0b1;
+  enableSpr_ = (data >> 4) & 0b1;
 }
 
 uint8_t Ppu::ReadPpuStatus() {
@@ -295,10 +375,16 @@ uint8_t Ppu::ReadPpuStatus() {
 void Ppu::WritePpuScroll(uint8_t data)
 {
   if(!latch_) {
-    scroll_.x = data;
+    // scroll_.x = data;
+    t_ = t_ & 0x7FE0;
+    t_ |= data >> 3;
+    finex_ = data & 0b111;
     latch_ = true;
   } else {
-    scroll_.y = data;
+    // scroll_.y = data;
+    t_ = t_ & 0x0C1F;
+    t_ |= (data >> 3)<<5; 
+    t_ |= (data & 0b111)<<12;
     latch_ = false;
   }
 }
@@ -306,22 +392,33 @@ void Ppu::WritePpuScroll(uint8_t data)
 void Ppu::WritePpuAddr(uint8_t data)
 {
   if(!latch_) {
-    ppuAddr_ = data<<8;
-    ppuAddr_ &= 0x3FFF;
+    t_ = data<<8;
+    t_ &= 0x3FFF;
     latch_ = true;
   } else {
-    ppuAddr_ |= data;
-    ppuAddr_ &= 0x3FFF;
+    t_ |= data;
+    t_ &= 0x3FFF;
+    v_ = t_;
     latch_ = false;
   }
 }
 
 uint8_t Ppu::ReadPpuData()
 {
-  uint8_t data = ppubus_.Read(ppuAddr_);
-  ppuAddr_ += IncPpuAddrSize();
-  ppuAddr_ &= 0x3FFF;
-  return data;
+  uint8_t result{};
+  uint16_t addr = v_&0x3FFF;
+  uint8_t data = ppubus_.Read(v_);
+  if (addr < 0x3F00) {
+    result = oldPpuData_;
+    oldPpuData_ = data;
+  }
+  else {
+    result = data;
+    oldPpuData_ = ppubus_.Read(addr - 0x1000);
+  }
+  v_ += IncPpuAddrSize();
+  v_ &= 0x3FFF;
+  return result;
 }
 
 void Ppu::WritePpuData(uint8_t data)
@@ -329,9 +426,9 @@ void Ppu::WritePpuData(uint8_t data)
   if(latch_) {
     throw std::runtime_error("PPU Latch Error.");
   }
-  ppubus_.Write(ppuAddr_, data);
-  ppuAddr_ += IncPpuAddrSize();
-  ppuAddr_ &= 0x3FFF;
+  ppubus_.Write(v_, data);
+  v_ += IncPpuAddrSize();
+  v_ &= 0x3FFF;
 }
 
 void Ppu::WriteOamAddr(uint8_t data)

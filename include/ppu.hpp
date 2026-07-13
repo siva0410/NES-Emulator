@@ -25,11 +25,15 @@ private:
   bool enableSpr_{};
   uint8_t ppuStatus_{};
   Point scroll_{};
+  uint32_t v_{};
+  uint32_t t_{};
+  uint32_t finex_{};
   Point coarse_{};
   Point fine_{};
   uint8_t nametableY_{};
   bool latch_{};
-  uint16_t ppuAddr_{};
+  // uint16_t ppuAddr_{};
+  uint8_t oldPpuData_{};
   uint8_t oamAddr_{};
   Ram oam_{0x100};
   std::array<RGB,64> pallet_{

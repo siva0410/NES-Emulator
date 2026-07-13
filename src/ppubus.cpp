@@ -12,6 +12,8 @@ void PpuBus::SetRom(Rom* rom)
 
 uint8_t PpuBus::Read(uint16_t addr) const
 {
+  addr &= 0x3FFF;
+
   /* CHR_ROM */
   if(addr >= 0x0000 && addr <= 0x1FFF) {
     if(rom_->IsChrRam()) {
@@ -19,7 +21,7 @@ uint8_t PpuBus::Read(uint16_t addr) const
     }
     return rom_->ReadChrRom(addr);
   }
-  else if (addr >= 0x2000 && addr <= 0x2FFF) {
+  else if ((addr >= 0x2000 && addr <= 0x2FFF) || (addr >=0x3000 && addr <= 0x3EFF)) {
     addr = addr & 0x0FFF;
     if (rom_->IsVerticalMirror()) {
       /* VRAM NT0 */
@@ -74,12 +76,13 @@ uint8_t PpuBus::Read(uint16_t addr) const
 
 void PpuBus::Write(uint16_t addr, uint8_t data)
 {
+  addr &= 0x3FFF;
   if(addr >= 0x0000 && addr <= 0x1FFF) {
     if(rom_->IsChrRam()) {
       rom_->WriteChrRam(addr, data);
     }
   }
-  else if (addr >= 0x2000 && addr <= 0x2FFF) {
+  else if ((addr >= 0x2000 && addr <= 0x2FFF) || (addr >=0x3000 && addr <= 0x3EFF)) {
     addr = addr & 0x0FFF;
     if (rom_->IsVerticalMirror()) {
       /* VRAM NT0 */
