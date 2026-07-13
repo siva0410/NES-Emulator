@@ -60,15 +60,19 @@ void Nes::Start()
   cpu_.Reset();
 
   bool running = true;
-  SDL_Event event;
+  uint32_t clock{};
+  SDL_Event event{};
   while (running) {
-    while (SDL_PollEvent(&event)) {
-      if (event.type == SDL_QUIT) {
-	running = false;
+    if (clock == 0x3FF) {
+      while (SDL_PollEvent(&event)) {
+	if (event.type == SDL_QUIT) {
+	  running = false;
+	}
+	KeyboardHandler(event);
       }
-      KeyboardHandler(event);
+      clock = 0;
     }
-
+    
     cpu_.Clock();
     for(uint8_t i=0; i<3; i++) {
       ppu_.Clock();
@@ -76,6 +80,8 @@ void Nes::Start()
 	cpu_.RequestNmi();
       }
     }
+    
+    clock++;
   }
 
   display_.Close();
