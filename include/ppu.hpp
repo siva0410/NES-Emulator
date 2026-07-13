@@ -28,14 +28,15 @@ private:
   uint32_t v_{};
   uint32_t t_{};
   uint32_t finex_{};
+  uint32_t nextFinex_{};
   Point coarse_{};
   Point fine_{};
   uint8_t nametableY_{};
   bool latch_{};
-  // uint16_t ppuAddr_{};
   uint8_t oldPpuData_{};
   uint8_t oamAddr_{};
   Ram oam_{0x100};
+  std::array<bool, 256*240> existPattern_{};
   std::array<RGB,64> pallet_{
     {
       {0x7C,0x7C,0x7C}, {0x00,0x00,0xFC}, {0x00,0x00,0xBC}, {0x44,0x28,0xBC},

@@ -87,10 +87,6 @@ void Cpu::Clock()
     
   uint8_t idx{cpubus_.Read(regs_.pc++)};
   cycles_ += optable_.at(idx).cycles - 1;
-  
-  // std::cout << std::hex << std::setw(4) << std::setfill('0')
-  // 	    << static_cast<unsigned int>(regs_.pc-1) << ": "
-  // 	    << optable_[idx].mnemonic << ": ";
 
   uint16_t operand{};
   uint16_t addr{};
@@ -162,8 +158,6 @@ void Cpu::Clock()
   default:
     break;
   }
-
-  // std::cout << static_cast<unsigned int>(operand) << std::endl;
 
   uint8_t arg1{};
   uint8_t arg2{};

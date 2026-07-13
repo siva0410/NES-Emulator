@@ -1,4 +1,11 @@
 #include "nes.hpp"
+#include "SDL_keycode.h"
+#include <chrono>
+#include <thread>
+
+namespace {
+  constexpr auto kClockSleep = std::chrono::microseconds{400};
+}
 
 void Nes::SetRom(std::string romfile)
 {
@@ -16,11 +23,11 @@ void Nes::KeyboardHandler(const SDL_Event& event)
   bool pressed = (event.type == SDL_KEYDOWN);
 
   switch(event.key.keysym.sym) {
-  case SDLK_x:
+  case SDLK_SPACE:
     controller1_.SetButton(Button::A, pressed);
     break;
 
-  case SDLK_z:
+  case SDLK_LSHIFT:
     controller1_.SetButton(Button::B, pressed);
     break;
 
@@ -70,6 +77,7 @@ void Nes::Start()
 	}
 	KeyboardHandler(event);
       }
+      std::this_thread::sleep_for(kClockSleep);
       clock = 0;
     }
     
