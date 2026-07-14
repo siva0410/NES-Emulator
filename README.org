@@ -1,17 +1,23 @@
 * NES Emulator
 NESの自作エミュレーターです。
-以下のテストを合格しています。
 
-| ROM        | 結果                                              |
-|------------+--------------------------------------------------|
-| hellowrold | file:image/hello_world.png                       |
-| nestest    | file:image/nestest.png                           |
-| sprite_hit | 08.double_height以外 (8x16のスプライト表示が未対応のため) |
+以下のテストを合格しています。
+| ROM        | パス             | 結果                                              |
+|------------+-----------------+--------------------------------------------------|
+| hellowrold | rom/helloworld/ | 画像                                                      |
+| nestest    | rom/nestest/    | 画像                                                    |
+| sprite_hit | rom/sprite_hit/ | 08.double_height以外 (8x16のスプライト表示が未対応のため) |
+
+#+CAPTION: hellowrold結果
+[[file:image/helloworld_small.png]]
+
+#+CAPTION: nestest結果
+[[file:image/nestest_small.png]]
 
 ** 実行例
 *** Super Mario Bros.
-  [[file:image/smb.gif]]
-# - Golf
+#+CAPTION: SMBデモ
+[[file:image/smb_small.gif]]
 
 ** 動作環境
 *** 環境
