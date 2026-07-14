@@ -1,0 +1,47 @@
+* NES Emulator
+NESの自作エミュレーターです。
+以下のテストを合格しています。
+
+| ROM        | 結果                                              |
+|------------+--------------------------------------------------|
+| hellowrold | file:image/hello_world.png                       |
+| nestest    | file:image/nestest.png                           |
+| sprite_hit | 08.double_height以外 (8x16のスプライト表示が未対応のため) |
+
+** 実行例
+*** Super Mario Bros.
+  [[file:image/smb.gif]]
+# - Golf
+
+** 動作環境
+*** 環境
+- Ubuntu 22.04.5 LTS
+
+*** 使用ツール一覧
+| 使用ツール | バージョン |
+|---------+---------|
+| cmake   |  3.22.1 |
+| SDL2    |  2.0.20 |
+
+*** インストール方法
+#+begin_example
+sudo apt update
+sudo apt install cmake libsdl2-dev
+#+end_example
+
+** 使用方法
+*** ビルド
+#+begin_example
+cmake -S . -B build
+cmake --build build
+#+end_example
+
+*** 実行
+#+begin_example
+./build/nes rom/<rom file>
+#+end_example
+
+** 現状未対応なもの
+- 8x16のスプライト表示
+- APU
+- Mapper0以外
