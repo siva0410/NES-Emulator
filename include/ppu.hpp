@@ -1,7 +1,6 @@
 #pragma once
 
 #include <cstdint>
-#include <string>
 
 #include "ppubus.hpp"
 #include "memory.hpp"
@@ -24,20 +23,18 @@ private:
   bool enableBg_{};
   bool enableSpr_{};
   uint8_t ppuStatus_{};
-  Point scroll_{};
   uint32_t v_{};
   uint32_t t_{};
   uint32_t finex_{};
   uint32_t nextFinex_{};
   Point coarse_{};
   Point fine_{};
-  uint8_t nametableY_{};
   bool latch_{};
   uint8_t oldPpuData_{};
   uint8_t oamAddr_{};
   Ram oam_{0x100};
   std::array<bool, 256*240> existPattern_{};
-  std::array<RGB,64> pallet_{
+  static constexpr std::array<RGB,64> pallet_{
     {
       {0x7C,0x7C,0x7C}, {0x00,0x00,0xFC}, {0x00,0x00,0xBC}, {0x44,0x28,0xBC},
       {0x94,0x00,0x84}, {0xA8,0x00,0x20}, {0xA8,0x10,0x00}, {0x88,0x14,0x00},
@@ -57,10 +54,7 @@ private:
       {0x00,0xFC,0xFC}, {0xF8,0xD8,0xF8}, {0x00,0x00,0x00}, {0x00,0x00,0x00}
     }
   };
-  void DrawBGPattern();
   void DrawBGPixel(Point screen);
-  void LatchYScroll();
-  void IncrementY();
   uint8_t GetSprPattern(Point screen, Point spr, uint8_t attr, uint16_t chrIdx);
   void DrawSprPattern(Point p, uint8_t attr, uint16_t chrIdx);
   void DrawSprPatterns();
@@ -70,17 +64,17 @@ private:
   uint8_t IncPpuAddrSize();
   uint16_t SpritePTAddr();
   uint16_t BackgroundPTAddr();
-  uint8_t SpriteSize();
-  bool SpriteOverflow();
+  // uint8_t SpriteSize();
+  // bool SpriteOverflow();
   void CheckSprite0Hit(Point screen, uint8_t bgPatternIdx);
   bool Sprite0Hit();
   void SetSprite0Hit();
   void ClearSprite0Hit();
-  bool Vblank();
   void SetVblank();
   void ClearVblank();
+  
 public:
-  Ppu(PpuBus& ppubus, Ram& palletram, Display& display);
+  Ppu(PpuBus& ppubus, Display& display);
   void Clock();
   bool ConsumeNmi();
   bool IsNmiEnable();

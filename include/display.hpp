@@ -1,11 +1,10 @@
 #pragma once
 
+#include <fstream>
 #include <cstdint>
 #include <array>
+
 #include <SDL2/SDL.h>
-
-#include "ppubus.hpp"
-
 
 using std::uint8_t;
 using std::uint16_t;
@@ -33,7 +32,6 @@ private:
   std::array<uint8_t,256*240*3> buffer_{};
 public:
   void Init();
-  void Open();
   void Update();
   void Close();
   void Write(Point p, RGB color);

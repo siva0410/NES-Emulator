@@ -1,8 +1,7 @@
 #include "ppu.hpp"
 #include "display.hpp"
-#include <iterator>
 
-Ppu::Ppu(PpuBus& ppubus, Ram& palletram, Display& display)
+Ppu::Ppu(PpuBus& ppubus, Display& display)
   : ppubus_(ppubus), display_(display)
 {
   for(uint32_t i=0; i<64; i++) {
@@ -93,7 +92,6 @@ uint8_t Ppu::GetSprPattern(Point screen, Point spr, uint8_t attr, uint16_t chrId
 void Ppu::DrawSprPattern(Point spr, uint8_t attr, uint16_t chrIdx)
 {
   uint8_t palletIdx = attr & 0b11;
-  uint16_t patternAddr = SpritePTAddr() + 0x10*chrIdx;
   
   Point fine{};
   for(fine.y=0; fine.y<8; fine.y++) {
@@ -307,14 +305,14 @@ uint16_t Ppu::BackgroundPTAddr()
   }
 }
 
-uint8_t Ppu::SpriteSize()
-{
-  if(ppuCtrl_>>5 & 0b1) {
-    return 0x00;
-  } else {
-    return 0x01;
-  }
-}
+// uint8_t Ppu::SpriteSize()
+// {
+//   if(ppuCtrl_>>5 & 0b1) {
+//     return 0x00;
+//   } else {
+//     return 0x01;
+//   }
+// }
 
 bool Ppu::IsNmiEnable() {
   return ppuCtrl_>>7 & 0b1;
@@ -418,9 +416,9 @@ void Ppu::WriteOam(uint16_t addr, uint8_t data)
   oam_.Write(addr, data);
 }
 
-bool Ppu::SpriteOverflow() {
-  return ppuStatus_>>5 & 0b1;
-}
+// bool Ppu::SpriteOverflow() {
+//   return ppuStatus_>>5 & 0b1;
+// }
 
 bool Ppu::Sprite0Hit() {
   return ppuStatus_>>6 & 0b1;
@@ -440,8 +438,4 @@ void Ppu::SetVblank() {
 
 void Ppu::ClearVblank() {
   ppuStatus_ &= 0b01111111;
-}
-
-bool Ppu::Vblank() {
-  return ppuStatus_>>7 & 0b1;
 }

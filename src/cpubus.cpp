@@ -28,7 +28,6 @@ uint8_t CpuBus::Read(uint16_t addr) const
       return ppu_.ReadPpuData();
     default:
       return 0x00;
-      // throw std::runtime_error("READ: Out of ppu register.");
     }
   }
   /* APU or I/O registers */
@@ -41,7 +40,6 @@ uint8_t CpuBus::Read(uint16_t addr) const
       return controller2_.Read();
     default:
       return 0x00;
-      // throw std::runtime_error("READ: Out of apu or i/o register.");
     }
   }
   else if(addr >= 0x4020 && addr <= 0x5FFF) {
@@ -120,7 +118,6 @@ void CpuBus::Write(uint16_t addr, uint8_t data)
       break;
     default:
       break;
-      throw std::runtime_error("WRITE: Out of apu or i/o registers.");
     }
   }
   else if(addr >= 0x6000 && addr <= 0x7FFF) {

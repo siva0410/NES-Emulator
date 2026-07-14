@@ -1,7 +1,6 @@
 #pragma once
 
 #include <cstdint>
-#include <string>
 
 #include "ram.hpp"
 #include "rom.hpp"
@@ -15,6 +14,7 @@ private:
   Rom* rom_{};
   Ram& vram_;
   Ram& palletram_;
+  uint16_t GetNametableAddr(uint16_t originAddr) const;
 public:
   PpuBus(Ram& vram, Ram& palletram);
   void SetRom(Rom* rom);

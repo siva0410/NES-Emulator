@@ -29,12 +29,12 @@ private:
   Ram wram_{0x0800};
   Ram vram_{0x0800};
   Ram palletram_{0x0020};
-  Cpu cpu_{cpubus_};
-  Ppu ppu_{ppubus_, palletram_, display_};
-  CpuBus cpubus_{ppu_, wram_, controller1_, controller2_};
   PpuBus ppubus_{vram_, palletram_};
+  Ppu ppu_{ppubus_, display_};
+  CpuBus cpubus_{ppu_, wram_, controller1_, controller2_};
+  Cpu cpu_{cpubus_};
+  
 public:
   void SetRom(std::string romfile);
   void Start();
-  bool WindowStart();
 };

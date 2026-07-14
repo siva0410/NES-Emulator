@@ -1,7 +1,6 @@
 #pragma once
 
 #include <cstdint>
-#include <string>
 
 #include "ram.hpp"
 #include "rom.hpp"
