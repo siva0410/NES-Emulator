@@ -171,6 +171,7 @@ void Ppu::Clock()
   
   if(cycles_ < 256 && lines_ < 240) {
     Point screen{cycles_, lines_};
+    display_.Write(screen, GetBGColor(0, 0));
     if (enableBg_) {
       if (showLeftBg_ || screen.x >= 8) {
 	DrawBGPixel(screen);
