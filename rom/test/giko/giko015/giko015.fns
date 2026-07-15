@@ -1,0 +1,17 @@
+; giko015.asm
+waitZeroSpriteHit                = $809C
+Start                            = $8000
+IRQ                              = $80F2
+waitScan                         = $80EC
+loadAttrib                       = $8039
+waitZeroSpriteClear              = $8097
+initZeroPage                     = $8071
+tilepal                          = $80F3
+loadNametable1                   = $8052
+infinityLoop                     = $8097
+loadNametable2                   = $8056
+loadNametable3                   = $8061
+waitVSync                        = $800A
+loadPal                          = $8020
+doScrollX                        = $80E3
+mainLoop                         = $80DA

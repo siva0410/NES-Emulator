@@ -1,0 +1,5 @@
+; giko005.asm
+Start                            = $8000
+tilepal                          = $8045
+infinityLoop                     = $8042
+loadPal                          = $801B

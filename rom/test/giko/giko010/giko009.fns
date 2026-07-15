@@ -1,0 +1,20 @@
+; giko009.asm
+NOTHINGdown                      = $809E
+Start                            = $8000
+Y_Pos_Init                       = $80B0
+UPKEYdown                        = $8089
+X_Pos_Init                       = $80AF
+LEFTKEYdown                      = $8095
+Sprite1_S                        = $0302
+Sprite1_T                        = $0301
+tilepal                          = $80B1
+DOWNKEYdown                      = $808F
+Sprite1_X                        = $0303
+Sprite1_Y                        = $0300
+Sprite2_S                        = $0306
+Sprite2_T                        = $0305
+RIGHTKEYdown                     = $809B
+loadPal                          = $801B
+Sprite2_X                        = $0307
+Sprite2_Y                        = $0304
+mainLoop                         = $804A

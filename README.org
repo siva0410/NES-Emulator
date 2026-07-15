@@ -1,19 +1,6 @@
 * NES Emulator
 NESの自作エミュレーターです。
 
-以下のテストを合格しています。
-| ROM        | パス             | 結果                                              |
-|------------+-----------------+--------------------------------------------------|
-| hellowrold | rom/helloworld/ | 画像                                                      |
-| nestest    | rom/nestest/    | 画像                                                    |
-| sprite_hit | rom/sprite_hit/ | 08.double_height以外 (8x16のスプライト表示が未対応のため) |
-
-#+CAPTION: hellowrold結果
-[[file:image/helloworld_small.png]]
-
-#+CAPTION: nestest結果
-[[file:image/nestest_small.png]]
-
 ** 実行例
 *** Super Mario Bros.
 #+CAPTION: SMBデモ
@@ -22,11 +9,13 @@ NESの自作エミュレーターです。
 ** 動作環境
 *** 環境
 - Ubuntu 22.04.5 LTS
+- C++ 20  
 
 *** 使用ツール一覧
 | 使用ツール | バージョン |
 |---------+---------|
 | cmake   |  3.22.1 |
+| gcc     |  11.4.0 |
 | SDL2    |  2.0.20 |
 
 *** インストール方法
@@ -51,3 +40,19 @@ cmake --build build
 - 8x16のスプライト表示
 - APU
 - Mapper0以外
+
+** テスト結果
+
+| テスト名                       | パス                        | テスト内容                    | 結果                                              | 参考                                                                                                                              |
+|-----------------------------+----------------------------+----------------------------+--------------------------------------------------+----------------------------------------------------------------------------------------------------------------------------------|
+| hellowrold                  | rom/test/helloworld/       | BGの表示テスト                 | [[file:image/helloworld_small.png]]              | https://tekepen.com/nes/sample.html                                                                                              |
+| nestest                     | rom/test/nestest/          | CPUの命令テスト                | [[file:image/nestest_small.png]]                 | https://www.nesdev.org/wiki/Emulator_tests                                                                                       |
+| color_test                  | rom/test/color_test/       | 色表示テスト                   | [[file:image/color.gif]]                         | https://forums.nesdev.org/viewtopic.php?p=155593#p155593                                                                         |
+| ｷﾞｺ猫でもわかるファミコンプログラミング | rom/test/giko/giko005/     | スプライトの表示テスト            | [[file:image/giko005.png]]                       | https://web.archive.org/web/20250621085001/http://gikofami.fc2web.com/index.html https://blog.naver.com/yagami81 (韓国語の転載サイト) |
+|                             | rom/test/giko/giko008/     | コントローラーのテスト            | [[file:image/giko008.gif]]                       |                                                                                                                                  |
+|                             | rom/test/giko/giko009/     | DMAによる2つのスプライトの移動テスト | [[file:image/giko009.gif]]                       |                                                                                                                                  |
+|                             | rom/test/giko/giko011/     | 背景のスクロールテスト            | [[file:image/giko011.gif]]                       |                                                                                                                                  |
+|                             | rom/test/giko/giko015/     | ラスタスクロールのテスト           | [[file:image/giko015.gif]]                       |                                                                                                                                  |
+| sprite_hit_tests            | rom/test/sprite_hit_tests/ | Sprite0Hitの確認テスト         | 08.double_height以外 (8x16のスプライト表示が未対応のため) | https://forums.nesdev.org/viewtopic.php?t=626                                                                                    |
+
+

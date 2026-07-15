@@ -1,0 +1,14 @@
+; giko008.asm
+NOTHINGdown                      = $809F
+Start                            = $8000
+Y_Pos_Init                       = $80A3
+Y_Pos                            = $0001
+UPKEYdown                        = $808A
+X_Pos_Init                       = $80A2
+LEFTKEYdown                      = $8096
+tilepal                          = $80A4
+DOWNKEYdown                      = $8090
+X_Pos                            = $0000
+RIGHTKEYdown                     = $809C
+loadPal                          = $801B
+mainLoop                         = $8037
